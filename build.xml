@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<project name="ARTI-project1" basedir="." default="help">
+
+	<property name="student" value="Jon Jonsson" />
+	<property name="mainclass" value="Main" />
+
+	<property name="lab" value="1" />
+
+	<property name="src" value="src"/>
+	<property name="build" value="build"/>
+	<property name="dist" value="dist"/>
+	<property name="dist.lib" value="${dist}/lib/"/>
+	<property name="projectname" value="project${lab}" />
+	<property name="finaljarfile" value="${build}/${projectname}.jar" />
+
+	<path id="defaultclasspath">
+		<fileset dir="${dist.lib}" includes="**/*.jar"/>
+	</path>
+	<pathconvert property="manifest.classpath" pathsep=" ">
+		<path refid="defaultclasspath"/>
+		<mapper>
+			<chainedmapper>
+				<flattenmapper/>
+				<globmapper from="*.jar" to="lib/*.jar"/>
+			</chainedmapper>
+		</mapper>
+	</pathconvert>
+	<target name="help">
+		<echo>first edit build.xml with your correct name and additional info 
+put your code in src/ and any additional libraries in dist/lib/
+then run "ant target" with one of these targets:
+	build - builds the class-files
+	dist  - builds, then creates a .jar in dist/
+	run   - like dist, but also runs that .jar
+	zip   - like dist, then creates a zip from the current directory
+	help  - prints this message
+
+if you need -Xlint=unchecked (in target build) or -Xmx500m (in target run), uncomment them in build.xml</echo>
+	</target>
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${build}" />
+	</target>
+	<target name="clean" description="cleans temporary files">
+		<delete dir="${build}" />
+	</target>
+
+	<target name="build" depends="clean,init" description="builds the project">
+		<javac srcdir="${src}"
+			destdir="${build}"
+			optimize="false"
+			source="1.8"
+			encoding="utf8"
+			 includeantruntime="false">
+			<classpath refid="defaultclasspath" />
+		<!--	target="1.8" -->
+			<!--
+			<compilerarg value="-Xlint:unchecked"/>
+			-->
+		</javac>
+		<jar jarfile="${finaljarfile}" >
+			<fileset dir="${build}"/>
+			<manifest>
+				<attribute name="Main-Class" value="${mainclass}" />
+				<attribute name="Class-Path" value="${manifest.classpath}" />
+				<attribute name="Implementation-Vendor" value="${student}" />
+			</manifest>
+		</jar>
+	</target>
+	<target name="dist" depends="build">
+		<copy todir="${dist}" file="${finaljarfile}" />
+		<antcall target="clean" />
+	</target>
+	<target name="run" depends="dist">
+		<java jar="${dist}/${projectname}.jar" fork="true">
+			<!--
+				add this line to be able to give a port as a command line argument with -Dport=1234
+				 <arg value="${port}"/>
+			 -->
+			<jvmarg value="-Xmx500m" />
+		</java>	
+		<antcall target="clean" />
+	</target>
+	<target name="zip" depends="dist">
+		<delete file="${projectname}.zip" />
+		<zip destfile="${projectname}.zip"
+			basedir="."
+			excludes="*.swp,.project,.classpath,.settings/**,bin/**,doc/**"
+			/>
+	</target>
+</project>
