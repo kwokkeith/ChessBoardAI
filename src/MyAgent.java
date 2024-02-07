@@ -41,10 +41,10 @@ public class MyAgent implements Agent {
 		if (myTurn) {
 			// TODO: 2. run alpha-beta search to determine the best move
             Move best_move = get_best_move();
-            
+             
             // Check if best move is a legal move
             // TODO: Implement some legal checking in the event our algorithm is wrong
-
+            
 
 
 			return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
