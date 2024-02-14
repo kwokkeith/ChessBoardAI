@@ -22,32 +22,39 @@ public class MyAgent implements Agent {
 		
     }
 
-	// lastMove is null the first time nextAction gets called (in the initial state)
-    // otherwise it contains the coordinates x1,y1,x2,y2 of the move that the last player did
-    public String nextAction(int[] lastMove) {
+    /**
+     * Computes the next best course of action. Then executes it
+     * @param lastMove Coordinates of the previous move in the form (x1, y1, x2, y2). null on game start.
+     */
+    public String nextAction(int[] lastMoveCoordinates) {
+
+        Move lastMove = new Move(lastMoveCoordinates[0],lastMoveCoordinates[1], lastMoveCoordinates[2], lastMoveCoordinates[3]);
+
         if (lastMove != null) {
-            int x1 = lastMove[0], y1 = lastMove[1], x2 = lastMove[2], y2 = lastMove[3];
             String roleOfLastPlayer;
             if (myTurn && role.equals("white") || !myTurn && role.equals("black")) {
                 roleOfLastPlayer = "white";
             } else {
                 roleOfLastPlayer = "black";
             }
-            System.out.println(roleOfLastPlayer + " moved from " + x1 + "," + y1 + " to " + x2 + "," + y2);
+            System.out.println(roleOfLastPlayer + " moved from [X,Y] : [" + lastMove.x1 + "," + lastMove.y1 + "] to [" + lastMove.x2 + "," + lastMove.y2 + "]");
 
             // TODO: 1. update your internal world model according to the action that was just executed
-            this.env.move(this.env.current_state, new Move(x1 - 1, y1 - 1, x2 - 1, y2 - 1));
+            this.env.move(this.env.current_state, lastMove);
         }
 		
     	// update turn (above that line it myTurn is still for the previous state)
 		myTurn = !myTurn;
+
 		if (myTurn) {
+
+
 			// TODO: 2. run alpha-beta search to determine the best move
             Move best_move = get_best_move();
             
             // Check if best move is a legal move
             // TODO: Implement some legal checking in the event our algorithm is wrong
-
+            
 
 
 			return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
@@ -56,6 +63,10 @@ public class MyAgent implements Agent {
 		}
 	}
 
+    /**
+     * Helper function to compute the best move given current environment.
+     * @return a Move object. The best move to take. May not be legal.
+     */
 	private Move get_best_move() {
         // TODO: Return the best move to send to game player
 
@@ -83,7 +94,7 @@ public class MyAgent implements Agent {
         Get possible positions of the enemy (Get legal moves if the current state is the opponent's turn) */
 
         // Find legal moves of opponent
-        ArrayList<Move> moves = env.get_legal_moves(state);
+        ArrayList<Move> moves = env.get_legal_moves_in_all_positions(state);
         for (Move move : moves){
             // Check if the new position is beside an opponent knight if so add 1.
             if (move.x2 < env.width - 1 && move.y2 + one_step < env.height && move.y2 + one_step >= 0 &&
