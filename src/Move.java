@@ -2,7 +2,7 @@ public class Move {
     public int x1, y1, x2, y2;
     
     /**
-     * From position (x1, y1) to position (x2, y2)
+     * From position (x1, y1) to position (x2, y2). Direction: bottom-top, left-right
      * @param x1 From x-coordinate
      * @param y1 From y-coordinate
      * @param x2 To x-coordinate
@@ -15,6 +15,10 @@ public class Move {
         this.y2 = y2;
     }
 
+    /**
+     * Checks if this move itself is diagonal
+     * @return boolean
+     */
     public boolean is_diagonal() {
         int changeInX = x2 - x1;
         int changeInY = y2 - y1;
@@ -25,7 +29,7 @@ public class Move {
     }
 
     public String toString(){
-        return "(move " + this.x1 + " " + this.y1 + " " + this.x2 + " " + this.y2 + ")";
+        return "Move [X,Y] from [" + this.x1 + "," + this.y1 + "] to [" + this.x2 + "," + this.y2 + "]";
     }
 
 }

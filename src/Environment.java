@@ -31,6 +31,11 @@ public class Environment {
         return true;
     }
 
+    /**
+     * Checks for whether the final position is empty or not (blocked or not)
+     * @param moveToTest We will extract out the x2 and y2 (final position) from it
+     * @return false if it is empty; true if it is not empty
+     */
     private boolean is_move_blocked(Move moveToTest) {
         char finalSquare = current_state.board[moveToTest.x2][moveToTest.y2];
         if (finalSquare == EMPTY) {
@@ -39,6 +44,12 @@ public class Environment {
         return true;
     }
 
+    /**
+     * Check for whether there is a capturable-diagonal piece from current position
+     * @param moveToTest This should be already a diagonal move itself.
+     * @param opponent We need to check if the opponent is on the final position of this move
+     * @return true if there is an opponent in the final position; false if not
+     */
     private boolean can_diagonal_move_capture(Move moveToTest, char opponent) {
         char finalSquare = current_state.board[moveToTest.x2][moveToTest.y2];
         if (finalSquare == opponent) {
@@ -47,14 +58,24 @@ public class Environment {
         return false;
     }
 
-    private void get_legal_moves_from_position(State state, ArrayList<Move> moves, int y, int x) {
+    /**
+     * Helper function for get_legal_moves_in_all_positions
+     * @param state state of the board. Used to figure whose turn it is
+     * @param y y coordinate of current position
+     * @param x x coordinate of current position
+     * @return ArrayList<Move> moves that are possible from current position
+     */
+    private ArrayList<Move> get_legal_moves_from_position(State state, int y, int x) {
         // x and y are current x and y coordinates
         // moves are possible moves
 
         // Find which pieces are enemy pieces - for capturing
         char opponent = state.white_turn ? BLACK : WHITE;
+        ArrayList<Move> moves = new ArrayList<Move>();
 
         int[][] hypotheticalMoves = {
+            // This will show all possible moves; for all directions, including diagonal moves.
+            // The checks for whether the moves are possible are below
             {-1, 2}, {1, 2}, {-2, 1}, {2, 1}, 
             {-1, -2}, {1, -2}, {-2, -1}, {2, -1},
             {-1, 1}, {1, 1}, {-1, -1}, {1, -1}
@@ -75,20 +96,26 @@ public class Environment {
                 }
             }
         }
+        return moves;
     }
 
+    /**
+     * Iterate through entire board and compute all legal moves from each position in board.
+     * @param state the state of the board. Used to figure whether a piece is friendly or not
+     * @return ArrayList<Move> all moves that are possible from current position
+     */
     public ArrayList<Move> get_legal_moves_in_all_positions(State state) {
         ArrayList<Move> moves = new ArrayList<>();
 
-        // Find which pieces are friendly pieces
+        // Find which pieces are friendly pieces - rationale is to move own's piece only
         char friendly = state.white_turn ? WHITE : BLACK;
 
-        // Iterate through board to find friendly pieces
         for (int y = 0; y < this.height; y++){
             for (int x = 0; x < this.width; x++) {
-                // If the current position is friendly
                 if (state.board[y][x] == friendly){
-                    get_legal_moves_from_position(state, moves, y, x);
+                    for (Move legalMove : get_legal_moves_from_position(state, y, x)) {
+                        moves.add(legalMove);
+                    }
                 }
             }
         }
