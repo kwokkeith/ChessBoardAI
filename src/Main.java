@@ -26,18 +26,18 @@ public class Main {
 				System.out.println(move);
 			}
 
-			// TEST 3: Random move up to `i` turn
-			for (int i = 0; i < 10; i ++){
-				// *** Uncomment code below to check legal moves
-				// for (Move move : moves) {
-				// 	System.out.println(move);
-				// }
-				ArrayList<Move> test3moves = env.get_legal_moves_in_all_positions(env.current_state);
-				Random rand = new Random();
-				int j = rand.nextInt(test3moves.size());
-				env.move(env.current_state, test3moves.get(j));
-				System.out.println(env.current_state);
-			}
+			// // TEST 3: Random move up to `i` turn
+			// for (int i = 0; i < 10; i ++){
+			// 	// *** Uncomment code below to check legal moves
+			// 	// for (Move move : moves) {
+			// 	// 	System.out.println(move);
+			// 	// }
+			// 	ArrayList<Move> test3moves = env.get_legal_moves_in_all_positions(env.current_state);
+			// 	Random rand = new Random();
+			// 	int j = rand.nextInt(test3moves.size());
+			// 	env.move(env.current_state, test3moves.get(j));
+			// 	System.out.println(env.current_state);
+			// }
 
 			Agent agent = new RandomAgent();
 

@@ -5,6 +5,7 @@ public class State {
     static final char WHITE = 'W';
     static final char EMPTY = ' ';
     private final int width;
+    private final int height;
 
     // Constructor for class State
     public State(int width, int height){
@@ -13,6 +14,7 @@ public class State {
         // If White starts first
         this.white_turn = true;
         this.width = width;
+        this.height = height;
 
         // Initialize the board with White and Black knights
         for (int i = 0; i < height; i++) {
@@ -28,6 +30,16 @@ public class State {
                 }
             }
         }
+    }
+
+    public boolean isTerminal() {
+        for (int j = 0; j < width; j++){
+            
+            if (!(this.board[j][0] == WHITE && this.board[j][height-1] == BLACK )) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String toString() {

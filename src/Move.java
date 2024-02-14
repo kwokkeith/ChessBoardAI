@@ -29,7 +29,7 @@ public class Move {
     }
 
     public String toString(){
-        return "Move [X,Y] from [" + this.x1 + "," + this.y1 + "] to [" + this.x2 + "," + this.y2 + "]";
+        return "Move [Y,X] from [" + this.y1 + "," + this.x1 + "] to [" + this.y2 + "," + this.x2 + "]";
     }
 
 }

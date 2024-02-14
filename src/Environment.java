@@ -37,7 +37,7 @@ public class Environment {
      * @return false if it is empty; true if it is not empty
      */
     private boolean is_move_blocked(Move moveToTest) {
-        char finalSquare = current_state.board[moveToTest.x2][moveToTest.y2];
+        char finalSquare = current_state.board[moveToTest.y2][moveToTest.x2];
         if (finalSquare == EMPTY) {
             return false;
         }
@@ -51,7 +51,7 @@ public class Environment {
      * @return true if there is an opponent in the final position; false if not
      */
     private boolean can_diagonal_move_capture(Move moveToTest, char opponent) {
-        char finalSquare = current_state.board[moveToTest.x2][moveToTest.y2];
+        char finalSquare = current_state.board[moveToTest.y2][moveToTest.x2];
         if (finalSquare == opponent) {
             return true;
         }
@@ -72,6 +72,7 @@ public class Environment {
         ArrayList<Move> legalMoves = new ArrayList<Move>();
 
         int[][] hypotheticalMoves = {
+            // {X,Y}
             // This will show all possible moves; for all directions, including diagonal moves.
             // The checks for whether the moves are possible are below
             {-1, 2}, {1, 2}, {-2, 1}, {2, 1}, 

@@ -22,6 +22,7 @@ public class MyAgent implements Agent {
 		
     }
 
+
     /**
      * Computes the next best course of action. Then executes it
      * @param lastMove Coordinates of the previous move in the form (x1, y1, x2, y2). null on game start.
@@ -48,9 +49,13 @@ public class MyAgent implements Agent {
 
 		if (myTurn) {
 
+            // If i understand correctly; the root node of minimax a-b algo uses 
+            // this.env.current_state here as a root node.
 
 			// TODO: 2. run alpha-beta search to determine the best move
-            Move best_move = get_best_move();
+            
+            Move best_move = new Move(1,1,1,1);
+            //Move best_move = get_best_move();
             
             // Check if best move is a legal move
             // TODO: Implement some legal checking in the event our algorithm is wrong
@@ -69,7 +74,14 @@ public class MyAgent implements Agent {
      */
 	private Move get_best_move() {
         // TODO: Return the best move to send to game player
-
+        Minimax minimaxAlgorithm = new Minimax();
+        // Keith to input into parameter evaluation_function
+        minimaxAlgorithm.set_evaluation_function(testEvaluationFunction);
+        
+        final int DEPTH_CUT_OFF = 10; // Hardcoded. Can change later. Controls how deep the recursion is
+        //TODO: make minimaxalgorithm return a Move object
+        return minimaxAlgorithm.run(this.env.current_state, DEPTH_CUT_OFF, myTurn);
+        
         
     }
 
