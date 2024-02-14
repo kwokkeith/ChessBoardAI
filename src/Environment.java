@@ -24,8 +24,8 @@ public class Environment {
      * @return false if it is not out-of-bounds; true if it is
      */
     private boolean is_move_out_of_bounds(Move moveToTest) {
-        if ((0 < moveToTest.x2 && moveToTest.x2 < this.width) &
-            (0 < moveToTest.y2 && moveToTest.y2 < this.height)) {
+        if ((0 <= moveToTest.x2 && moveToTest.x2 < this.width) &
+            (0 <= moveToTest.y2 && moveToTest.y2 < this.height)) {
             return false;
         }
         return true;
@@ -65,8 +65,9 @@ public class Environment {
      * @param x x coordinate of current position
      * @return ArrayList<Move> moves that are possible from current position
      */
-    private ArrayList<Move> get_legal_moves_from_position(State state, int y, int x) {
+    public ArrayList<Move> get_legal_moves_from_position(State state, int y, int x) {
 
+        System.out.println("CALLED");
         // Find which pieces are enemy pieces - for capturing
         char opponent = state.white_turn ? BLACK : WHITE;
         ArrayList<Move> legalMoves = new ArrayList<Move>();
@@ -87,10 +88,13 @@ public class Environment {
 
             if (!is_move_out_of_bounds(moveToAdd)) {
                 if (moveToAdd.is_diagonal()) {
+                    
+                    System.out.println("Move is diagonal!");
                     if (can_diagonal_move_capture(moveToAdd, opponent)) {
                         legalMoves.add(moveToAdd);
                     }
                 } else if (!is_move_blocked(moveToAdd)) {
+                    System.out.println("Move is blocked!");
                     legalMoves.add(moveToAdd);
                 }
             }
@@ -111,7 +115,8 @@ public class Environment {
 
         for (int y = 0; y < this.height; y++){
             for (int x = 0; x < this.width; x++) {
-                if (state.board[y][x] == friendly){
+                if (state.board[y][x] == friendly) {
+                    System.out.println("This is friendly: [x,y]" + String.valueOf(x) + "," + String.valueOf(y) );
                     for (Move legalMove : get_legal_moves_from_position(state, y, x)) {
                         moves.add(legalMove);
                     }

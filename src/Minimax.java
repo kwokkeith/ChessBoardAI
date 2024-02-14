@@ -28,7 +28,6 @@ public class Minimax {
                 if (beta <= alpha) {
                     break;
                 }
-            }
             return maxEvaluation;
 
         } else {
@@ -43,7 +42,7 @@ public class Minimax {
             }
             return minEvaluation;
         }
-        
+
     }
 
     public void set_evaluation_function(Evaluation_Function evaluation_function) {
