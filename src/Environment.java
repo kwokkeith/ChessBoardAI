@@ -7,121 +7,142 @@ public class Environment {
     static final char WHITE = 'W';
     static final char EMPTY = ' ';
 
+    /**
+     * Internal "board" 
+     * @param width Board's width. Will not change. [0, width)
+     * @param height Board's height. Will not change. [0, height)
+     */
     public Environment(int width, int height) {
         this.width = width;
         this.height = height;
         this.current_state = new State(width, height);
     }
 
-    private boolean can_move_n_steps_forward(State state, int y, int max_height_black, int max_height_white){
-        if (state.white_turn && y <= max_height_white) return true;
-        if (!state.white_turn && y >= max_height_black) return true;
+    /**
+     * Checks if a Move's final position is in the board; whether move is valid
+     * @param moveToTest A Move object. We will extract out x2 and y2 from it.
+     * @return false if it is not out-of-bounds; true if it is
+     */
+    private boolean is_move_out_of_bounds(Move moveToTest) {
+        if ((0 < moveToTest.x2 && moveToTest.x2 < this.width) &
+            (0 < moveToTest.y2 && moveToTest.y2 < this.height)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks for whether the final position is empty or not (blocked or not)
+     * @param moveToTest We will extract out the x2 and y2 (final position) from it
+     * @return false if it is empty; true if it is not empty
+     */
+    private boolean is_move_blocked(Move moveToTest) {
+        char finalSquare = current_state.board[moveToTest.x2][moveToTest.y2];
+        if (finalSquare == EMPTY) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check for whether there is a capturable-diagonal piece from current position
+     * @param moveToTest This should be already a diagonal move itself.
+     * @param opponent We need to check if the opponent is on the final position of this move
+     * @return true if there is an opponent in the final position; false if not
+     */
+    private boolean can_diagonal_move_capture(Move moveToTest, char opponent) {
+        char finalSquare = current_state.board[moveToTest.x2][moveToTest.y2];
+        if (finalSquare == opponent) {
+            return true;
+        }
         return false;
     }
 
-    private void get_moves(State state, ArrayList<Move> moves, int y, int x){
-        // Find which pieces are enemy pieces
+    /**
+     * Helper function for get_legal_moves_in_all_positions
+     * @param state state of the board. Used to figure whose turn it is
+     * @param y y coordinate of current position
+     * @param x x coordinate of current position
+     * @return ArrayList<Move> moves that are possible from current position
+     */
+    private ArrayList<Move> get_legal_moves_from_position(State state, int y, int x) {
+        // x and y are current x and y coordinates
+        // moves are possible moves
+
+        // Find which pieces are enemy pieces - for capturing
         char opponent = state.white_turn ? BLACK : WHITE;
+        ArrayList<Move> moves = new ArrayList<Move>();
 
-        // Constants for number of steps
-        int one_step = state.white_turn ? 1 : -1;
-        int two_steps = state.white_turn ? 2 : -2;
+        int[][] hypotheticalMoves = {
+            // This will show all possible moves; for all directions, including diagonal moves.
+            // The checks for whether the moves are possible are below
+            {-1, 2}, {1, 2}, {-2, 1}, {2, 1}, 
+            {-1, -2}, {1, -2}, {-2, -1}, {2, -1},
+            {-1, 1}, {1, 1}, {-1, -1}, {1, -1}
+        };
+        
+        for (int[] hypotheticalMove : hypotheticalMoves) {
+            int newX = x + hypotheticalMove[0];
+            int newY = y + hypotheticalMove[1];
+            Move moveToAdd = new Move(x, y, newX, newY);
 
-        // Two steps forward and one step left/right
-        // Check if the above move would be within bounds of the board
-        if (can_move_n_steps_forward(state, y, 2, this.height - 3)){
-            // LEFT
-            if (x > 0 && state.board[y + two_steps][x - 1] == EMPTY)
-                moves.add(new Move(x, y, x - 1, y + two_steps));
-            
-            // RIGHT
-            if (x < this.width - 1 && state.board[y + two_steps][x + 1] == EMPTY)
-                moves.add(new Move(x, y, x + 1, y + two_steps));
+            if (!is_move_out_of_bounds(moveToAdd)) {
+                if (moveToAdd.is_diagonal()) {
+                    if (can_diagonal_move_capture(moveToAdd, opponent)) {
+                        moves.add(moveToAdd);
+                    }
+                } else if (!is_move_blocked(moveToAdd)) {
+                    moves.add(moveToAdd);
+                }
+            }
         }
-
-        // One step forward and two steps left/right
-        if (can_move_n_steps_forward(state, y, 1, this.height - 2)){
-            // LEFT
-            if (x > 1 && state.board[y + one_step][x - 2] == EMPTY)
-                moves.add(new Move(x, y, x - 2, y + one_step));
-            
-            // RIGHT
-            if (x < this.width - 2 && state.board[y + one_step][x + 2] == EMPTY)
-                moves.add(new Move(x, y, x + 2, y + one_step));
-        }
-
-        // Diagonal (Capture) - only if there is an opponent
-        if (can_move_n_steps_forward(state, y, 1, this.height - 2)){
-            // Diagonally LEFT
-            if (x > 0 && state.board[y + one_step][x - 1] == opponent)
-                moves.add(new Move(x, y, x - 1, y + one_step));
-            
-            // Diagonally RIGHT
-            if (x < this.width - 1 && state.board[y + one_step][x + 1] == opponent)
-                moves.add(new Move(x, y, x + 1, y + one_step));
-        }
+        return moves;
     }
 
-    public ArrayList<Move> get_legal_moves(State state) {
+    /**
+     * Iterate through entire board and compute all legal moves from each position in board.
+     * @param state the state of the board. Used to figure whether a piece is friendly or not
+     * @return ArrayList<Move> all moves that are possible from current position
+     */
+    public ArrayList<Move> get_legal_moves_in_all_positions(State state) {
         ArrayList<Move> moves = new ArrayList<>();
 
-        // Find which pieces are friendly pieces
+        // Find which pieces are friendly pieces - rationale is to move own's piece only
         char friendly = state.white_turn ? WHITE : BLACK;
 
-        // Iterate through board to find friendly pieces
         for (int y = 0; y < this.height; y++){
             for (int x = 0; x < this.width; x++) {
-                // If the current position is friendly
                 if (state.board[y][x] == friendly){
-                    get_moves(state, moves, y, x);
+                    for (Move legalMove : get_legal_moves_from_position(state, y, x)) {
+                        moves.add(legalMove);
+                    }
                 }
             }
         }
         return moves;        
     }
-
+    
     public void move(State state, Move move) {
-        // Move to new position
         state.board[move.y2][move.x2] = state.board[move.y1][move.x1];
-
         // Old position becomes EMPTY 
         state.board[move.y1][move.x1] = EMPTY;
-
         // Flip the turn
         state.white_turn = !state.white_turn;
     }
 
-    private boolean was_diagonal_move(Move move){
-        // Checks if the current move is a diagonal move
-        if (move.y2 - 1 == move.y1 && move.x2 - 1 == move.x1){
-            return true;
-        }
-        if (move.y2 + 1 == move.y1 && move.x2 - 1 == move.x1){
-            return true;
-        }
-        if (move.y2 - 1 == move.y1 && move.x2 + 1 == move.x1){
-            return true;
-        }
-        if (move.y2 + 1 == move.y1 && move.x2 + 1 == move.x1){
-            return true;
-        }
-        return false;
-    }
-
-    public void undo_move(State state, Move move) {
-        if (was_diagonal_move(move)) {
-            // Is diagonal move
+    public void undo_move(State state, Move previousMove) {
+        if (previousMove.is_diagonal()) {
             // Take new position and move it back to old position
-            state.board[move.y1][move.x1] = state.board[move.y2][move.x2];
+            state.board[previousMove.y1][previousMove.x1] = state.board[previousMove.y2][previousMove.x2];
 
             // Check if new position is white or black depending on the current turn
-            state.board[move.y2][move.x2] = state.white_turn ? WHITE : BLACK;
+            state.board[previousMove.y2][previousMove.x2] = state.white_turn ? WHITE : BLACK;
         } else {
             // Not diagonal move
-            char tmp = state.board[move.y1][move.x1];
-            state.board[move.y1][move.x1] = state.board[move.y2][move.x2];
+            char tmp = state.board[previousMove.y1][previousMove.x1];
+            state.board[previousMove.y1][previousMove.x1] = state.board[previousMove.y2][previousMove.x2];
             // Reset the next move to be the original decided move
-            state.board[move.y2][move.x2] = tmp; 
+            state.board[previousMove.y2][previousMove.x2] = tmp; 
         }
 
         state.white_turn = !state.white_turn;

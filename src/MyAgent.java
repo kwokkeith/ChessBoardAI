@@ -73,7 +73,6 @@ public class MyAgent implements Agent {
          * The output `score` indicates the number of potential moves that an enemy can 
          * make that would result in its possible capture in the next turn*/
 
-        
         // Flip the player because we are testing the potential next state (if white moves then BLACK turn)
         char player = state.white_turn ? Environment.BLACK : Environment.WHITE;
         int one_step = state.white_turn ? 1 : -1; 
@@ -102,7 +101,6 @@ public class MyAgent implements Agent {
         return score;
     }
 
-    
     private int protected_evaluation(State state) {
         /* `state`: The state to be evaluated
          * At the current state, calculate the amount of friendly pieces that can protect other friendly pieces
@@ -179,6 +177,6 @@ public class MyAgent implements Agent {
 	}
 }
 
-
 // Endgame Scenarios: In later stages of the game, the evaluation function could shift to prioritize reaching the goal line over other considerations,
 // especially when few pieces are left on the board.
+
