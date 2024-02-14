@@ -85,10 +85,10 @@ public class Environment {
             int newX = x + hypotheticalMove[0];
             int newY = y + hypotheticalMove[1];
             Move moveToAdd = new Move(x, y, newX, newY);
-
+            System.out.println("Move to add" + moveToAdd.toString());
             if (!is_move_out_of_bounds(moveToAdd)) {
                 if (moveToAdd.is_diagonal()) {
-                    
+    
                     System.out.println("Move is diagonal!");
                     if (can_diagonal_move_capture(moveToAdd, opponent)) {
                         legalMoves.add(moveToAdd);
