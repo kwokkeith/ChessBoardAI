@@ -605,7 +605,7 @@ public class NanoHTTPD
 			else 
 			{
 				return new Response( HTTP_FORBIDDEN, MIME_PLAINTEXT, 
-								 "FORBIDDEN: No directory listing." );
+								"FORBIDDEN: No directory listing." );
 			}
 		}
 

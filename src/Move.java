@@ -20,8 +20,8 @@ public class Move {
      * @return boolean
      */
     public boolean is_diagonal() {
-        int changeInX = x2 - x1;
-        int changeInY = y2 - y1;
+        int changeInX = Math.abs(x2 - x1);
+        int changeInY = Math.abs(y2 - y1);
         if (changeInX == 1 && changeInY == 1) {
             return true;
         }
@@ -29,7 +29,7 @@ public class Move {
     }
 
     public String toString(){
-        return "Move [Y,X] from [" + this.y1 + "," + this.x1 + "] to [" + this.y2 + "," + this.x2 + "]";
+        return "Move [X,Y] from [" + this.x1 + "," + this.y1 + "] to [" + this.x2 + "," + this.y2 + "]";
     }
 
 }

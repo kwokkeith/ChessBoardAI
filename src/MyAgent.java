@@ -72,17 +72,24 @@ public class MyAgent implements Agent {
      * Helper function to compute the best move given current environment.
      * @return a Move object. The best move to take. May not be legal.
      */
-	private Move get_best_move() {
+	private Move get_best_move(State state) {
         // TODO: Return the best move to send to game player
         Minimax minimaxAlgorithm = new Minimax();
-        // Keith to input into parameter evaluation_function
-        minimaxAlgorithm.set_evaluation_function(testEvaluationFunction);
-        
         final int DEPTH_CUT_OFF = 10; // Hardcoded. Can change later. Controls how deep the recursion is
         //TODO: make minimaxalgorithm return a Move object
-        return minimaxAlgorithm.run(this.env.current_state, DEPTH_CUT_OFF, myTurn);
+        Evaluation_Function evaluationFunction = currentState -> combined_evaluation(currentState);
+        minimaxAlgorithm.set_evaluation_function(evaluationFunction);
+        try {
+            minimaxAlgorithm.run(env, DEPTH_CUT_OFF, myTurn);
+        } catch(Exception e) {
+            System.out.println("Exception caught");
+        }
+        return Minimax.best_move;
         
-        
+    }
+
+    private int combined_evaluation(State state) {
+        return capture_potential_evaluation(state) + protected_evaluation(state) + calculate_moves_to_goal(state);
     }
 
     // Implementation of alpha-beta pruning algorithm
@@ -173,7 +180,7 @@ public class MyAgent implements Agent {
         char player = state.white_turn ? Environment.BLACK : Environment.WHITE; 
         int two_step = (player == Environment.WHITE) ? 2 : -2; 
 
-        for (int h = 0; h < env.height; h++){
+        for (int h = 0; h < env.height; h++) {
             for (int w = 0; w < env.width; w++){
                 // Check the total number of actions to get to destination
                 if (state.board[w][h] == player){

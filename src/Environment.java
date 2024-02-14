@@ -51,7 +51,7 @@ public class Environment {
      * @return true if there is an opponent in the final position; false if not
      */
     private boolean can_diagonal_move_capture(Move moveToTest, char opponent) {
-        char finalSquare = current_state.board[moveToTest.y2][moveToTest.x2];
+        char finalSquare = current_state.board[moveToTest.x2][moveToTest.y2];
         if (finalSquare == opponent) {
             return true;
         }
@@ -61,13 +61,12 @@ public class Environment {
     /**
      * Helper function for get_legal_moves_in_all_positions
      * @param state state of the board. Used to figure whose turn it is
-     * @param y y coordinate of current position
      * @param x x coordinate of current position
+     * @param y y coordinate of current position
      * @return ArrayList<Move> moves that are possible from current position
      */
-    public ArrayList<Move> get_legal_moves_from_position(State state, int y, int x) {
+    public ArrayList<Move> get_legal_moves_from_position(State state, int x, int y) {
 
-        System.out.println("CALLED");
         // Find which pieces are enemy pieces - for capturing
         char opponent = state.white_turn ? BLACK : WHITE;
         ArrayList<Move> legalMoves = new ArrayList<Move>();
@@ -85,16 +84,16 @@ public class Environment {
             int newX = x + hypotheticalMove[0];
             int newY = y + hypotheticalMove[1];
             Move moveToAdd = new Move(x, y, newX, newY);
-            System.out.println("Move to add" + moveToAdd.toString());
+            System.out.println("Move to add have not checked: " + moveToAdd.toString());
             if (!is_move_out_of_bounds(moveToAdd)) {
                 if (moveToAdd.is_diagonal()) {
-    
-                    System.out.println("Move is diagonal!");
                     if (can_diagonal_move_capture(moveToAdd, opponent)) {
+                        
+                        System.out.println("Move can diagonally capture!: " + moveToAdd.toString());
                         legalMoves.add(moveToAdd);
                     }
                 } else if (!is_move_blocked(moveToAdd)) {
-                    System.out.println("Move is blocked!");
+                    System.out.println("Move is validly to empty spot!");
                     legalMoves.add(moveToAdd);
                 }
             }
@@ -115,9 +114,8 @@ public class Environment {
 
         for (int y = 0; y < this.height; y++){
             for (int x = 0; x < this.width; x++) {
-                if (state.board[y][x] == friendly) {
-                    System.out.println("This is friendly: [x,y]" + String.valueOf(x) + "," + String.valueOf(y) );
-                    for (Move legalMove : get_legal_moves_from_position(state, y, x)) {
+                if (state.board[x][y] == friendly) {
+                    for (Move legalMove : get_legal_moves_from_position(state, x, y)) {
                         moves.add(legalMove);
                     }
                 }
@@ -127,9 +125,9 @@ public class Environment {
     }
     
     public void move(State state, Move move) {
-        state.board[move.y2][move.x2] = state.board[move.y1][move.x1];
+        state.board[move.x2][move.y2] = state.board[move.x1][move.y1];
         // Old position becomes EMPTY 
-        state.board[move.y1][move.x1] = EMPTY;
+        state.board[move.x1][move.y1] = EMPTY;
         // After the move, pass on the turn
         state.white_turn = !state.white_turn;
     }
@@ -138,15 +136,15 @@ public class Environment {
         if (previousMove.is_diagonal()) {
             // Previous move captured the diagonal horse.
             // Take new position and move it back to old position
-            state.board[previousMove.y1][previousMove.x1] = state.board[previousMove.y2][previousMove.x2];
+            state.board[previousMove.x1][previousMove.y1] = state.board[previousMove.x2][previousMove.y2];
             // Set back the opponent's piece that was captured.
-            state.board[previousMove.y2][previousMove.x2] = state.white_turn ? WHITE : BLACK;
+            state.board[previousMove.x2][previousMove.y2] = state.white_turn ? WHITE : BLACK;
         } else {
             // Not diagonal move; just a standard empty move.
-            char tmp = state.board[previousMove.y1][previousMove.x1];
-            state.board[previousMove.y1][previousMove.x1] = state.board[previousMove.y2][previousMove.x2];
+            char tmp = state.board[previousMove.x1][previousMove.y1];
+            state.board[previousMove.x1][previousMove.y1] = state.board[previousMove.x2][previousMove.y2];
             // Reset the next move to be the original decided move
-            state.board[previousMove.y2][previousMove.x2] = tmp; 
+            state.board[previousMove.x2][previousMove.y2] = tmp; 
         }
 
         // Pass turn

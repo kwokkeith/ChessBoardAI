@@ -23,7 +23,6 @@ public class Main {
 			System.out.println("Test 2: env.current_state:" + env.current_state);
 			System.out.println("Printing out all moves:");
 			for (Move move: test2moves){
-				System.out.println(env.current_state);
 				System.out.println(move);
 			}
 
