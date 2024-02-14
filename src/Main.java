@@ -16,11 +16,12 @@ public class Main {
 
 			// TEST 1: Move a piece
 			env.move(env.current_state, new Move(0, 0, 4, 4));
-			System.out.println(env.current_state);
+			System.out.println("Test 1: env.current_state:" + env.current_state);
 
 			// TEST 2: Check the next legal moves
-			ArrayList<Move> moves = env.get_legal_moves(env.current_state);
-			System.out.println(env.current_state);
+			ArrayList<Move> moves = env.get_legal_moves_in_all_positions(env.current_state);
+			System.out.println("Test 2: env.current_state:" + env.current_state);
+			System.out.println("Printing out all moves:");
 			for (Move move: moves){
 				System.out.println(move);
 			}
