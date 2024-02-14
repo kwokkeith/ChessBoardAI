@@ -18,6 +18,7 @@ public class MyAgent implements Agent {
 
 		// TODO: add your own initialization code here
         this.env = new Environment(width, height);
+
 		
     }
 
@@ -46,7 +47,7 @@ public class MyAgent implements Agent {
             
             // Check if best move is a legal move
             // TODO: Implement some legal checking in the event our algorithm is wrong
-            
+
 
 
 			return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
@@ -57,9 +58,9 @@ public class MyAgent implements Agent {
 
 	private Move get_best_move() {
         // TODO: Return the best move to send to game player
+
         
     }
-
 
     // Implementation of alpha-beta pruning algorithm
     // Count number of possible elimination
@@ -71,7 +72,6 @@ public class MyAgent implements Agent {
          * 
          * The output `score` indicates the number of potential moves that an enemy can 
          * make that would result in its possible capture in the next turn*/
-
 
         // Flip the player because we are testing the potential next state (if white moves then BLACK turn)
         char player = state.white_turn ? Environment.BLACK : Environment.WHITE;
@@ -100,7 +100,6 @@ public class MyAgent implements Agent {
 
         return score;
     }
-
 
     private int protected_evaluation(State state) {
         /* `state`: The state to be evaluated
@@ -169,11 +168,6 @@ public class MyAgent implements Agent {
         return score;
     }
 
-
-
-
-
-
     // is called when the game is over or the match is aborted
 	@Override
 	public void cleanup() {
@@ -183,7 +177,6 @@ public class MyAgent implements Agent {
 	}
 }
 
-
-
 // Endgame Scenarios: In later stages of the game, the evaluation function could shift to prioritize reaching the goal line over other considerations,
 // especially when few pieces are left on the board.
+
