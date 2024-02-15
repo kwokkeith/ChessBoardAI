@@ -9,7 +9,7 @@ public class State {
 
     // Constructor for class State
     public State(int width, int height){
-        this.board = new char[height][width];
+        this.board = new char[width][height];
 
         // If White starts first
         this.white_turn = true;
@@ -20,13 +20,13 @@ public class State {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++){
                 if (i < 2){
-                    this.board[i][j] = WHITE;
+                    this.board[j][i] = BLACK;
                 }
                 else if (i > height - 3){
-                    this.board[i][j] = BLACK;
+                    this.board[j][i] = WHITE;
                 }
                 else {
-                    this.board[i][j] = EMPTY;
+                    this.board[j][i] = EMPTY;
                 }
             }
         }
@@ -43,15 +43,30 @@ public class State {
     }
 
     public String toString() {
-        int dash_count = this.width * 5 - 6;
-        String line = "\n" + "-".repeat(dash_count) + "\n";
-        String result = line;
-
-        for (int i = 0; i < this.width; i++) {
-            result += new String(this.board[i]).replaceAll("", " | ");
-            result += line;
+        StringBuilder sb = new StringBuilder();
+    
+        // Append the top border of the board
+        sb.append("+");
+        for (int i = 0; i < width * 3 - 1; i++) {
+            sb.append("-");
         }
-
-        return result;
+        sb.append("+\n");
+    
+        // Append each row of the board
+        for (int i = 0; i < height; i++) {
+            sb.append("| ");
+            for (int j = 0; j < width; j++) {
+                sb.append(board[j][i]).append(" | ");
+            }
+            sb.append("\n+");
+            for (int k = 0; k < width; k++) {
+                sb.append("---+");
+            }
+            sb.append("\n");
+        }
+    
+        return sb.toString();
     }
+    
+
 }

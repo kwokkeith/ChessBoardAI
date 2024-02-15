@@ -24,8 +24,12 @@ public class Environment {
      * @return false if it is not out-of-bounds; true if it is
      */
     private boolean is_move_out_of_bounds(Move moveToTest) {
-        if ((0 <= moveToTest.x2 && moveToTest.x2 < this.width) &
+        
+        if ((0 <= moveToTest.x1 && moveToTest.x1 < this.width) &
+            (0 <= moveToTest.y1 && moveToTest.y1 < this.height) &
+            (0 <= moveToTest.x2 && moveToTest.x2 < this.width) &
             (0 <= moveToTest.y2 && moveToTest.y2 < this.height)) {
+                System.out.println("Move out of bounds false " + moveToTest.toString());
             return false;
         }
         return true;
@@ -37,7 +41,7 @@ public class Environment {
      * @return false if it is empty; true if it is not empty
      */
     private boolean is_move_blocked(Move moveToTest) {
-        char finalSquare = current_state.board[moveToTest.y2][moveToTest.x2];
+        char finalSquare = current_state.board[moveToTest.x2][moveToTest.y2];
         if (finalSquare == EMPTY) {
             return false;
         }
@@ -66,7 +70,7 @@ public class Environment {
      * @return ArrayList<Move> moves that are possible from current position
      */
     public ArrayList<Move> get_legal_moves_from_position(State state, int x, int y) {
-
+        System.out.println("XY : " + String.valueOf(x) + String.valueOf(y));
         // Find which pieces are enemy pieces - for capturing
         char opponent = state.white_turn ? BLACK : WHITE;
         ArrayList<Move> legalMoves = new ArrayList<Move>();
@@ -114,6 +118,7 @@ public class Environment {
 
         for (int y = 0; y < this.height; y++){
             for (int x = 0; x < this.width; x++) {
+                System.out.println("X and Y iterated in get_legal moves in all positions");
                 if (state.board[x][y] == friendly) {
                     for (Move legalMove : get_legal_moves_from_position(state, x, y)) {
                         moves.add(legalMove);
@@ -127,6 +132,7 @@ public class Environment {
     public void move(State state, Move move) {
         state.board[move.x2][move.y2] = state.board[move.x1][move.y1];
         // Old position becomes EMPTY 
+        System.out.println(state);
         state.board[move.x1][move.y1] = EMPTY;
         // After the move, pass on the turn
         state.white_turn = !state.white_turn;

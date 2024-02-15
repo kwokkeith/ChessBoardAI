@@ -29,9 +29,10 @@ public class MyAgent implements Agent {
      */
     public String nextAction(int[] lastMoveCoordinates) {
 
-        Move lastMove = new Move(lastMoveCoordinates[0],lastMoveCoordinates[1], lastMoveCoordinates[2], lastMoveCoordinates[3]);
+        if (lastMoveCoordinates != null) {
+            System.out.println("Last move " + lastMoveCoordinates[0]);
+            Move lastMove = new Move(lastMoveCoordinates[0]-1,lastMoveCoordinates[1]-1, lastMoveCoordinates[2]-1, lastMoveCoordinates[3]-1);
 
-        if (lastMove != null) {
             String roleOfLastPlayer;
             if (myTurn && role.equals("white") || !myTurn && role.equals("black")) {
                 roleOfLastPlayer = "white";
@@ -43,9 +44,8 @@ public class MyAgent implements Agent {
             // TODO: 1. update your internal world model according to the action that was just executed
             this.env.move(this.env.current_state, lastMove);
         }
-		
-    	// update turn (above that line it myTurn is still for the previous state)
-		myTurn = !myTurn;
+        // update turn (above myTurn is still for the previous state)
+        myTurn = !myTurn;
 
 		if (myTurn) {
 
@@ -53,19 +53,17 @@ public class MyAgent implements Agent {
             // this.env.current_state here as a root node.
 
 			// TODO: 2. run alpha-beta search to determine the best move
-            
-            Move best_move = new Move(1,1,1,1);
-            //Move best_move = get_best_move();
-            
+            System.out.println("Problematic current state is empty:" + this.env.current_state);
+            Move best_move = get_best_move(this.env.current_state);
             // Check if best move is a legal move
             // TODO: Implement some legal checking in the event our algorithm is wrong
             
-
-
-			return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
-		} else {
-			return "noop";
+            System.out.println("Somehow it passes the get_best_move()");
+            System.out.println("My agent sends this command: " + "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")");
+			return "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")";
 		}
+        return "noop";
+    	
 	}
 
     /**
@@ -74,16 +72,19 @@ public class MyAgent implements Agent {
      */
 	private Move get_best_move(State state) {
         // TODO: Return the best move to send to game player
-        Minimax minimaxAlgorithm = new Minimax();
+        Minimax minimax = new Minimax();
         final int DEPTH_CUT_OFF = 10; // Hardcoded. Can change later. Controls how deep the recursion is
         //TODO: make minimaxalgorithm return a Move object
         Evaluation_Function evaluationFunction = currentState -> combined_evaluation(currentState);
-        minimaxAlgorithm.set_evaluation_function(evaluationFunction);
+        minimax.set_evaluation_function(evaluationFunction);
+        System.out.println("Minimax evaluation function " + minimax.evaluation_function);
         try {
-            minimaxAlgorithm.run(env, DEPTH_CUT_OFF, myTurn);
+            System.out.println("Environment, its height, width: " + env.current_state + env.height + ", " + env.width);
+            minimax.run(env, DEPTH_CUT_OFF, myTurn);
         } catch(Exception e) {
-            System.out.println("Exception caught");
+            System.out.println("Minimax algorithm failed to run!: " + e.getMessage());
         }
+        System.out.println("Minimax returns next best move: " + Minimax.best_move);
         return Minimax.best_move;
         
     }
