@@ -15,6 +15,14 @@ public class Move {
         this.y2 = y2;
     }
 
+    public Move add(int n) {
+        this.x1 += n;
+        this.y1 += n;
+        this.x2 += n;
+        this.y2 += n;
+        return this;
+    }
+
     /**
      * Checks if this move itself is diagonal
      * @return boolean

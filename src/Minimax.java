@@ -17,15 +17,14 @@ public class Minimax {
      * @param maximising_player boolean to determine whose turn it is
      * @return root state's highest possible score. (Input state's highest possible score)
      */
-    private int minimax_alpha_beta(Environment current_env, int cutoff_depth, 
+    private int minimax_alpha_beta(Environment current_env, State state, int cutoff_depth, 
         int depth, int alpha, int beta, boolean maximising_player) {
 
         System.out.println("Minimax alpha beta search begins...");
 
         if (depth == cutoff_depth ) {
             // Must store the state
-            System.out.println("Leaf node reached!!");
-            return evaluation_function.evaluate(current_env.current_state); // Keith to compute
+            return evaluation_function.evaluate(state); // Keith to compute
         }
 
 
@@ -34,14 +33,14 @@ public class Minimax {
             int maxEvaluation = NEGATIVE_INFINITY;
 
             // If root node then pick a random action first
-            ArrayList<Move> moves = current_env.get_legal_moves_in_all_positions(current_env.current_state);
+            ArrayList<Move> moves = current_env.get_legal_moves_in_all_positions(state);
             if (depth == 0){
                 best_move = moves.get(0);
             }
 
             for (Move child_move : moves) { // To implement somehow a way to get child states
-                current_env.move(current_env.current_state, child_move);
-                int evaluation = minimax_alpha_beta(current_env, cutoff_depth, depth + 1, alpha, beta, false);
+                current_env.move(state, child_move);
+                int evaluation = minimax_alpha_beta(current_env, state, cutoff_depth, depth + 1, alpha, beta, false);
                 maxEvaluation = Math.max(maxEvaluation, evaluation);
 
 
@@ -50,7 +49,7 @@ public class Minimax {
 
                 System.out.println("Depth:" + depth);
                 if (depth != 0) {
-                    current_env.undo_move(current_env.current_state, child_move); // Set the board to parent's board state.
+                    current_env.undo_move(state, child_move); // Set the board to parent's board state.
                 } else { // Root node: update best move.
                     if (maxEvaluation == evaluation) {
                         best_move = child_move;
@@ -66,23 +65,23 @@ public class Minimax {
         } else {
             System.out.println("\nMinimising player turn:");
             int minEvaluation = POSITIVE_INFINITY;
-            ArrayList<Move> moves = current_env.get_legal_moves_in_all_positions(current_env.current_state);
+            ArrayList<Move> moves = current_env.get_legal_moves_in_all_positions(state);
             
             // If root node then pick a random action first
             if (depth == 0){
                 best_move = moves.get(0);
             }
 
-            for (Move child_move : current_env.get_legal_moves_in_all_positions(current_env.current_state)) { // To implement somehow a way to get child states
-                current_env.move(current_env.current_state, child_move);
+            for (Move child_move : current_env.get_legal_moves_in_all_positions(state)) { // To implement somehow a way to get child states
+                current_env.move(state, child_move);
                 
-                int evaluation = minimax_alpha_beta(current_env, cutoff_depth, depth + 1, alpha, beta, true);
+                int evaluation = minimax_alpha_beta(current_env, state, cutoff_depth, depth + 1, alpha, beta, true);
                 minEvaluation = Math.min(minEvaluation, evaluation);
                 beta = Math.min(beta, evaluation);
 
                 System.out.println("Depth:" + depth);
                 if (depth != 0) {
-                    current_env.undo_move(current_env.current_state, child_move); // Set the board to parent's board state.
+                    current_env.undo_move(state, child_move); // Set the board to parent's board state.
                 } else { // Root node: update best move.
                     if (minEvaluation == evaluation) {
                         best_move = child_move;
@@ -103,7 +102,7 @@ public class Minimax {
     }
 
 
-    public int run(Environment current_environment, int cutoff_depth, boolean maximising_player) {
+    public int run(Environment current_environment, State state, int cutoff_depth, boolean maximising_player) {
         /*
         if (evaluation_function == null) {
             System.out.println("Evaluation function is not set!");
@@ -111,7 +110,7 @@ public class Minimax {
         }
          */
         System.out.println("Evaluation function is set!");
-        return minimax_alpha_beta(current_environment, cutoff_depth, 0, NEGATIVE_INFINITY, POSITIVE_INFINITY, maximising_player);
+        return minimax_alpha_beta(current_environment, state, cutoff_depth, 0, NEGATIVE_INFINITY, POSITIVE_INFINITY, maximising_player);
     }
 
 }

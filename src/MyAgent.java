@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MyAgent implements Agent {
     private String role; // the name of this agent's role (white or black)
@@ -42,6 +43,7 @@ public class MyAgent implements Agent {
             System.out.println(roleOfLastPlayer + " moved from [X,Y] : [" + lastMove.x1 + "," + lastMove.y1 + "] to [" + lastMove.x2 + "," + lastMove.y2 + "]");
 
             // TODO: 1. update your internal world model according to the action that was just executed
+
             this.env.move(this.env.current_state, lastMove);
         }
         // update turn (above myTurn is still for the previous state)
@@ -58,9 +60,8 @@ public class MyAgent implements Agent {
             // Check if best move is a legal move
             // TODO: Implement some legal checking in the event our algorithm is wrong
             
-            System.out.println("Somehow it passes the get_best_move()");
             System.out.println("My agent sends this command: " + "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")");
-			return "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")";
+            return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
 		}
         return "noop";
     	
@@ -79,7 +80,10 @@ public class MyAgent implements Agent {
         minimax.set_evaluation_function(evaluationFunction);
         try {
             System.out.println("Environment, its height, width: " + env.current_state + env.height + ", " + env.width);
-            minimax.run(env, DEPTH_CUT_OFF, myTurn);
+            
+            State working_state = copy_state(env.current_state);
+            
+            minimax.run(env, working_state, DEPTH_CUT_OFF, myTurn);
         } catch(Exception e) {
             System.out.println("Minimax algorithm failed to run!: " + e.getMessage());
         }
@@ -88,6 +92,25 @@ public class MyAgent implements Agent {
         
     }
 
+    // To deep copy the state
+    private State copy_state(State state) {
+        State new_state     = new State(this.env.width, this.env.height);
+        char[][] board_copy = new char[this.env.height][this.env.width];
+
+        for (int i = 0; i < this.env.height; i++)
+            board_copy[i] = Arrays.copyOf(state.board[i], state.board[i].length);
+
+        new_state.board      = board_copy;
+        new_state.white_turn = state.white_turn;
+
+        return new_state;
+    }
+
+    /**
+     * Calculates the evaluation value based on the different evaluation functions
+     * @param state State of the board
+     * @return
+     */
     private int combined_evaluation(State state) {
         return 10 * capture_potential_evaluation(state) + 5 * protected_evaluation(state) - calculate_moves_to_goal(state);
     }
@@ -117,12 +140,12 @@ public class MyAgent implements Agent {
         for (Move move : moves){
             // Check if the new position is beside an opponent knight if so add 1.
             if (move.x2 < env.width - 1 && move.y2 + one_step < env.height && move.y2 + one_step >= 0 &&
-            state.board[move.x2 + 1][move.y2 + one_step] == player){
+            state.board[move.y2 + 1][move.x2 + one_step] == player){
                 score += weight;
                 continue;
             }
             if (move.x2 > 0 && move.y2 + one_step < env.height && move.y2 + one_step >= 0 &&
-                state.board[move.x2 - 1][move.y2 + one_step] == player){
+                state.board[move.y2 - 1][move.x2 + one_step] == player){
                 score += weight;
                 continue;
             }
@@ -150,13 +173,13 @@ public class MyAgent implements Agent {
                 if (state.board[w][h] == player){
                     // Check diagonal right (Check if it will go out of bounds)
                     if ((w + 1 < env.width) && (h + one_step < env.height) && (h + one_step >= 0) &&
-                        (state.board[w + 1][h + one_step] == player)){
+                        (state.board[h + one_step][w + 1] == player)){
                         score += weight;
                         continue;
                     }
                     // Check diagonal left
                     if ((w > 0) && (h + one_step < env.height) && (h + one_step >= 0) &&
-                    (state.board[w - 1][h + one_step] == player)){
+                    (state.board[h + one_step][w - 1] == player)){
                         score += weight;
                         continue;
                     }
@@ -183,7 +206,7 @@ public class MyAgent implements Agent {
         for (int h = 0; h < env.height; h++) {
             for (int w = 0; w < env.width; w++){
                 // Check the total number of actions to get to destination
-                if (state.board[w][h] == player){
+                if (state.board[h][w] == player){
                     // Check how many moves to get to enemy baseline if board was empty
                     // Assume every move, moves the player by 2 vertically
                     switch (player){

@@ -9,7 +9,7 @@ public class State {
 
     // Constructor for class State
     public State(int width, int height){
-        this.board = new char[width][height];
+        this.board = new char[height][width];
 
         // If White starts first
         this.white_turn = true;
@@ -20,13 +20,13 @@ public class State {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++){
                 if (i < 2){
-                    this.board[j][i] = BLACK;
+                    this.board[i][j] = WHITE;
                 }
                 else if (i > height - 3){
-                    this.board[j][i] = WHITE;
+                    this.board[i][j] = BLACK;
                 }
                 else {
-                    this.board[j][i] = EMPTY;
+                    this.board[i][j] = EMPTY;
                 }
             }
         }
@@ -34,7 +34,7 @@ public class State {
 
     public boolean isTerminal() {
         for (int j = 0; j < width; j++){
-            if (this.board[j][0] == BLACK || this.board[j][height-1] == WHITE ) {
+            if (this.board[0][j] == BLACK || this.board[height-1][j] == WHITE ) {
                 return true;
             }
         }
@@ -42,29 +42,16 @@ public class State {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        int dash_count = this.width * 5 - 6;
+        String line    = "\n " + "-".repeat(dash_count) + "\n";
+        String result  = line;
     
-        // Append the top border of the board
-        sb.append("+");
-        for (int i = 0; i < width * 3 - 1; i++) {
-            sb.append("-");
-        }
-        sb.append("+\n");
-    
-        // Append each row of the board
-        for (int i = 0; i < height; i++) {
-            sb.append("| ");
-            for (int j = 0; j < width; j++) {
-                sb.append(board[j][i]).append(" | ");
-            }
-            sb.append("\n+");
-            for (int k = 0; k < width; k++) {
-                sb.append("---+");
-            }
-            sb.append("\n");
+        for (int i = this.width - 1; i >= 0; i--) {  // Iterate in reverse order
+            result += new String(this.board[i]).replaceAll("", " | ");
+            result += line;
         }
     
-        return sb.toString();
+        return result;
     }
     
 
