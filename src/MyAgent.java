@@ -31,7 +31,6 @@ public class MyAgent implements Agent {
     public String nextAction(int[] lastMoveCoordinates) {
 
         if (lastMoveCoordinates != null) {
-            System.out.println("Last move " + lastMoveCoordinates[0]);
             Move lastMove = new Move(lastMoveCoordinates[0]-1,lastMoveCoordinates[1]-1, lastMoveCoordinates[2]-1, lastMoveCoordinates[3]-1);
 
             String roleOfLastPlayer;
@@ -40,7 +39,6 @@ public class MyAgent implements Agent {
             } else {
                 roleOfLastPlayer = "black";
             }
-            System.out.println(roleOfLastPlayer + " moved from [X,Y] : [" + lastMove.x1 + "," + lastMove.y1 + "] to [" + lastMove.x2 + "," + lastMove.y2 + "]");
 
             // TODO: 1. update your internal world model according to the action that was just executed
 
@@ -55,7 +53,6 @@ public class MyAgent implements Agent {
             // this.env.current_state here as a root node.
 
 			// TODO: 2. run alpha-beta search to determine the best move
-            System.out.println("Problematic current state is empty:" + this.env.current_state);
             Move best_move = get_best_move(this.env.current_state);
             // Check if best move is a legal move
             // TODO: Implement some legal checking in the event our algorithm is wrong
@@ -112,12 +109,16 @@ public class MyAgent implements Agent {
      * @return
      */
     private int combined_evaluation(State state) {
-        return 10 * capture_potential_evaluation(state) + 5 * protected_evaluation(state) - calculate_moves_to_goal(state);
+        ArrayList<Move> moves = env.get_legal_moves_in_all_positions(state);
+
+        return capture_potential_evaluation(state, moves) + protected_evaluation(state) - calculate_moves_to_goal(state) 
+        + check_if_terminal_move(state) + defense_line_evaluation(state, moves);
     }
+
 
     // Implementation of alpha-beta pruning algorithm
     // Count number of possible elimination
-    private int capture_potential_evaluation(State state) {
+    private int capture_potential_evaluation(State state, ArrayList<Move> moves) {
         /* `state`: The state to be evaluated
          * At the current state, how many possible captures are possible after the other player has made a turn to move
          * Can be L-shaped or diagonal (more priority <diagonal> since it is usually better to capture)
@@ -128,29 +129,30 @@ public class MyAgent implements Agent {
 
         // Flip the player because we are testing the potential next state (if white moves then BLACK turn)
         char player = state.white_turn ? Environment.BLACK : Environment.WHITE;
-        int one_step = state.white_turn ? 1 : -1; 
+        int one_step = state.white_turn ? -1 : 1; 
         int score = 0;
         int weight = 1;
 
         /* Count number of possible elimination
         Get possible positions of the enemy (Get legal moves if the current state is the opponent's turn) */
 
-        // Find legal moves of opponent
-        ArrayList<Move> moves = env.get_legal_moves_in_all_positions(state);
-        for (Move move : moves){
+
+        for (Move move : moves){            
             // Check if the new position is beside an opponent knight if so add 1.
-            if (move.x2 < env.width - 1 && move.y2 + one_step < env.height && move.y2 + one_step >= 0 &&
-            state.board[move.y2 + 1][move.x2 + one_step] == player){
-                score += weight;
-                continue;
+            if (move.x2 < env.width - 1 && move.y2 + one_step < env.height && move.y2 + one_step >= 0){
+                if(state.board[move.y2 + one_step][move.x2 + 1] == player){
+                    score += weight;
+                    continue;
+                }
             }
-            if (move.x2 > 0 && move.y2 + one_step < env.height && move.y2 + one_step >= 0 &&
-                state.board[move.y2 - 1][move.x2 + one_step] == player){
-                score += weight;
-                continue;
+            if (move.x2 > 0 && move.y2 + one_step < env.height && move.y2 + one_step >= 0){
+                if (state.board[move.y2 + one_step][move.x2 - 1] == player){
+                    score += weight;
+                    continue;
+                }
             }
         }
-
+        
         return score;
     }
 
@@ -201,8 +203,7 @@ public class MyAgent implements Agent {
 
         // Get player indicator (WHITE or BLACK)
         char player = state.white_turn ? Environment.BLACK : Environment.WHITE; 
-        int two_step = (player == Environment.WHITE) ? 2 : -2; 
-
+        
         for (int h = 0; h < env.height; h++) {
             for (int w = 0; w < env.width; w++){
                 // Check the total number of actions to get to destination
@@ -210,8 +211,8 @@ public class MyAgent implements Agent {
                     // Check how many moves to get to enemy baseline if board was empty
                     // Assume every move, moves the player by 2 vertically
                     switch (player){
-                        case Environment.WHITE: score += ((env.height - h) + 1) / 2;
-                        case Environment.BLACK: score += (h + 2) / 2;
+                        case Environment.WHITE: score += ((env.height - h) + 1) / 2; break;
+                        case Environment.BLACK: score += (h + 2) / 2; break;
                     }
 
                 }
@@ -221,6 +222,59 @@ public class MyAgent implements Agent {
         return score;
     }
 
+    /**
+     * Evaluates function: Check if there are any moves that will get to the winning move
+     * @param state The state to be evaluated
+     * @return An evaluation value that should be >>> than the other evaluation functions
+     */
+    private int check_if_terminal_move(State state){
+        int winning_height = state.white_turn ? env.height - 1 : 0; 
+
+        for (int h = 0; h < env.height; h++) {
+            for (int w = 0; w < env.width; w++){
+                // Check if any legal; moves lead to winning move
+                if (state.board[h][w] == (state.white_turn ? Environment.WHITE : Environment.BLACK)){
+                        ArrayList<Move> legal_moves = env.get_legal_moves_in_all_positions(state);
+                        for (Move move: legal_moves){
+                            if (move.y2 == winning_height){
+                                return Integer.MAX_VALUE;
+                            }
+                        }
+                    }
+                }
+            }
+
+        return 0;
+    }
+
+
+    private int defense_line_evaluation(State state, ArrayList<Move> moves){
+        char player = state.white_turn ? Environment.WHITE : Environment.BLACK; 
+
+        for (Move move : moves){
+            // Keep defensive line, enemy winning row
+            // Attack any diagonal enemy infront of defensive line.
+            switch(player) {
+                case Environment.WHITE:
+                    if (move.y1 == 0){
+                        if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, player)){
+                            return Integer.MAX_VALUE - 1;
+                        }
+                        return -(env.width << 10);
+                    };
+                    break;
+                case Environment.BLACK: 
+                    if (move.y1 == env.height - 1){
+                        if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, player)){
+                            return Integer.MAX_VALUE - 1;
+                        }
+                        return -(env.width << 10);
+                    }
+                    break;
+            }
+        }
+        return 0;
+    }
     // is called when the game is over or the match is aborted
 	@Override
 	public void cleanup() {
