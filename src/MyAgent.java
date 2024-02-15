@@ -73,11 +73,10 @@ public class MyAgent implements Agent {
 	private Move get_best_move(State state) {
         // TODO: Return the best move to send to game player
         Minimax minimax = new Minimax();
-        final int DEPTH_CUT_OFF = 10; // Hardcoded. Can change later. Controls how deep the recursion is
+        final int DEPTH_CUT_OFF = 2; // Hardcoded. Can change later. Controls how deep the recursion is
         //TODO: make minimaxalgorithm return a Move object
         Evaluation_Function evaluationFunction = currentState -> combined_evaluation(currentState);
         minimax.set_evaluation_function(evaluationFunction);
-        System.out.println("Minimax evaluation function " + minimax.evaluation_function);
         try {
             System.out.println("Environment, its height, width: " + env.current_state + env.height + ", " + env.width);
             minimax.run(env, DEPTH_CUT_OFF, myTurn);

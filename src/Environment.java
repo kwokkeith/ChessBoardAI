@@ -29,7 +29,6 @@ public class Environment {
             (0 <= moveToTest.y1 && moveToTest.y1 < this.height) &
             (0 <= moveToTest.x2 && moveToTest.x2 < this.width) &
             (0 <= moveToTest.y2 && moveToTest.y2 < this.height)) {
-                System.out.println("Move out of bounds false " + moveToTest.toString());
             return false;
         }
         return true;
@@ -88,7 +87,6 @@ public class Environment {
             int newX = x + hypotheticalMove[0];
             int newY = y + hypotheticalMove[1];
             Move moveToAdd = new Move(x, y, newX, newY);
-            System.out.println("Move to add have not checked: " + moveToAdd.toString());
             if (!is_move_out_of_bounds(moveToAdd)) {
                 if (moveToAdd.is_diagonal()) {
                     if (can_diagonal_move_capture(moveToAdd, opponent)) {

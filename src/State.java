@@ -34,8 +34,7 @@ public class State {
 
     public boolean isTerminal() {
         for (int j = 0; j < width; j++){
-            
-            if (!(this.board[j][0] == WHITE && this.board[j][height-1] == BLACK )) {
+            if (this.board[j][0] == BLACK || this.board[j][height-1] == WHITE ) {
                 return true;
             }
         }
