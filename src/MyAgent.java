@@ -90,7 +90,7 @@ public class MyAgent implements Agent {
     }
 
     private int combined_evaluation(State state) {
-        return capture_potential_evaluation(state) + protected_evaluation(state) + calculate_moves_to_goal(state);
+        return 10 * capture_potential_evaluation(state) + 5 * protected_evaluation(state) - calculate_moves_to_goal(state);
     }
 
     // Implementation of alpha-beta pruning algorithm
