@@ -32,15 +32,6 @@ public class State {
         }
     }
 
-    public boolean isTerminal() {
-        for (int j = 0; j < width; j++){
-            if (this.board[0][j] == BLACK || this.board[height-1][j] == WHITE ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public String toString() {
         int dash_count = this.width * 5 - 6;
         String line    = "\n " + "-".repeat(dash_count) + "\n";

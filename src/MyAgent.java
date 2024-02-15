@@ -19,8 +19,7 @@ public class MyAgent implements Agent {
 
 		// TODO: add your own initialization code here
         this.env = new Environment(width, height);
-
-		
+        System.out.println("State isssss:" + env.current_state);
     }
 
 
@@ -33,12 +32,12 @@ public class MyAgent implements Agent {
         if (lastMoveCoordinates != null) {
             Move lastMove = new Move(lastMoveCoordinates[0]-1,lastMoveCoordinates[1]-1, lastMoveCoordinates[2]-1, lastMoveCoordinates[3]-1);
 
-            String roleOfLastPlayer;
-            if (myTurn && role.equals("white") || !myTurn && role.equals("black")) {
-                roleOfLastPlayer = "white";
-            } else {
-                roleOfLastPlayer = "black";
-            }
+            // String roleOfLastPlayer;
+            // if (myTurn && role.equals("white") || !myTurn && role.equals("black")) {
+            //     roleOfLastPlayer = "white";
+            // } else {
+            //     roleOfLastPlayer = "black";
+            // }
 
             // TODO: 1. update your internal world model according to the action that was just executed
 
@@ -55,7 +54,6 @@ public class MyAgent implements Agent {
 			// TODO: 2. run alpha-beta search to determine the best move
             Move best_move = get_best_move(this.env.current_state);
             // Check if best move is a legal move
-            // TODO: Implement some legal checking in the event our algorithm is wrong
             
             System.out.println("My agent sends this command: " + "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")");
             return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
@@ -110,9 +108,13 @@ public class MyAgent implements Agent {
      */
     private int combined_evaluation(State state) {
         ArrayList<Move> moves = env.get_legal_moves_in_all_positions(state);
-
-        return capture_potential_evaluation(state, moves) + protected_evaluation(state) - calculate_moves_to_goal(state) 
+        int evaluation = capture_potential_evaluation(state, moves) + protected_evaluation(state) - calculate_moves_to_goal(state) 
         + check_if_terminal_move(state) + defense_line_evaluation(state, moves);
+        if (!state.white_turn){
+            return -evaluation;
+        }
+
+        return evaluation;
     }
 
 
@@ -202,7 +204,7 @@ public class MyAgent implements Agent {
         int score = 0;
 
         // Get player indicator (WHITE or BLACK)
-        char player = state.white_turn ? Environment.BLACK : Environment.WHITE; 
+        char player = state.white_turn ? Environment.WHITE : Environment.BLACK; 
         
         for (int h = 0; h < env.height; h++) {
             for (int w = 0; w < env.width; w++){
@@ -250,14 +252,14 @@ public class MyAgent implements Agent {
 
     private int defense_line_evaluation(State state, ArrayList<Move> moves){
         char player = state.white_turn ? Environment.WHITE : Environment.BLACK; 
-
+        char opponent = state.white_turn ? Environment.BLACK : Environment.WHITE;
         for (Move move : moves){
             // Keep defensive line, enemy winning row
             // Attack any diagonal enemy infront of defensive line.
             switch(player) {
                 case Environment.WHITE:
                     if (move.y1 == 0){
-                        if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, player)){
+                        if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
                             return Integer.MAX_VALUE - 1;
                         }
                         return -(env.width << 10);
@@ -265,11 +267,11 @@ public class MyAgent implements Agent {
                     break;
                 case Environment.BLACK: 
                     if (move.y1 == env.height - 1){
-                        if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, player)){
-                            return Integer.MAX_VALUE - 1;
+                        if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
+                            return Integer.MAX_VALUE - 5;
                         }
                         return -(env.width << 10);
-                    }
+                    };
                     break;
             }
         }
