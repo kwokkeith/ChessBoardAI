@@ -141,7 +141,6 @@ public class Environment {
 
         // After the move, pass on the turn
         state.white_turn = !state.white_turn;
-        System.out.println(state);
     }
 
     public void undo_move(State state, Move previousMove) {

@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.TimerTask;
+import java.util.Timer;
 
 public class MyAgent implements Agent {
     private String role; // the name of this agent's role (white or black)
@@ -7,6 +9,11 @@ public class MyAgent implements Agent {
 	private boolean myTurn; // whether it is this agent's turn or not
 	private int width, height; // dimensions of the board
     private Environment env; // To know about board environment
+    
+    // For timer...
+    private Timer timer;
+    private volatile boolean stop_flag = false;
+
 	/*
 		init(String role, int playclock) is called once before you have to select the first action. Use it to initialize the agent. role is either "white" or "black" and playclock is the number of seconds after which nextAction must return.
 	*/
@@ -19,7 +26,6 @@ public class MyAgent implements Agent {
 
 		// TODO: add your own initialization code here
         this.env = new Environment(width, height);
-        System.out.println("State isssss:" + env.current_state);
     }
 
 
@@ -28,63 +34,69 @@ public class MyAgent implements Agent {
      * @param lastMove Coordinates of the previous move in the form (x1, y1, x2, y2). null on game start.
      */
     public String nextAction(int[] lastMoveCoordinates) {
-
+        
         if (lastMoveCoordinates != null) {
             Move lastMove = new Move(lastMoveCoordinates[0]-1,lastMoveCoordinates[1]-1, lastMoveCoordinates[2]-1, lastMoveCoordinates[3]-1);
 
-            // String roleOfLastPlayer;
-            // if (myTurn && role.equals("white") || !myTurn && role.equals("black")) {
-            //     roleOfLastPlayer = "white";
-            // } else {
-            //     roleOfLastPlayer = "black";
-            // }
-
-            // TODO: 1. update your internal world model according to the action that was just executed
+            // update internal world model according to the action that was just executed
 
             this.env.move(this.env.current_state, lastMove);
         }
         // update turn (above myTurn is still for the previous state)
         myTurn = !myTurn;
 
-		if (myTurn) {
-
+		if (myTurn) {            
             // If i understand correctly; the root node of minimax a-b algo uses 
             // this.env.current_state here as a root node.
 
 			// TODO: 2. run alpha-beta search to determine the best move
-            Move best_move = get_best_move(this.env.current_state);
-            // Check if best move is a legal move
-            
+
+            // Start timer if player turn
+            timer = new Timer();
+            stop_flag = false;
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    stop_flag = true;
+                    timer.cancel();
+                }
+            }, (playclock - 1) * 1000);
+            int cut_off = 2;
+            Move best_move = get_best_move(this.env.current_state, cut_off);
+            if (!stop_flag){
+                if (cut_off <= 4){
+                    cut_off += 1;
+                    best_move = get_best_move(this.env.current_state, cut_off);
+                // Check if best move is a legal move
+                }
+            }
+
             System.out.println("My agent sends this command: " + "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")");
             return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
 		}
-        return "noop";
-    	
+        return "noop";    
 	}
 
     /**
      * Helper function to compute the best move given current environment.
      * @return a Move object. The best move to take. May not be legal.
      */
-	private Move get_best_move(State state) {
-        // TODO: Return the best move to send to game player
+	private Move get_best_move(State state, int cut_off) {
         Minimax minimax = new Minimax();
-        final int DEPTH_CUT_OFF = 2; // Hardcoded. Can change later. Controls how deep the recursion is
-        //TODO: make minimaxalgorithm return a Move object
         Evaluation_Function evaluationFunction = currentState -> combined_evaluation(currentState);
         minimax.set_evaluation_function(evaluationFunction);
         try {
-            System.out.println("Environment, its height, width: " + env.current_state + env.height + ", " + env.width);
+            // System.out.println("Environment, its height, width: " + env.current_state + env.height + ", " + env.width);
             
             State working_state = copy_state(env.current_state);
             
-            minimax.run(env, working_state, DEPTH_CUT_OFF, myTurn);
+            minimax.run(env, working_state, cut_off, myTurn);
         } catch(Exception e) {
             System.out.println("Minimax algorithm failed to run!: " + e.getMessage());
         }
-        System.out.println("Minimax returns next best move: " + Minimax.best_move);
+        // System.out.println("Minimax returns next best move: " + Minimax.best_move);
+    
         return Minimax.best_move;
-        
     }
 
     // To deep copy the state
