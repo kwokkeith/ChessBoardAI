@@ -51,16 +51,15 @@ public class MyAgent implements Agent {
                     stop_flag = true;
                     timer.cancel();
                 }
-            }, (playclock - 1) * 1000);
+            }, (playclock - 2) * 1000);
 
             // For cut off depth
             int cut_off = 2;
             Move best_move = get_best_move(this.env.current_state, cut_off);
             if (!stop_flag){
-                if (cut_off <= 4){
+                if (cut_off <= 5){
                     cut_off += 1;
                     best_move = get_best_move(this.env.current_state, cut_off);
-                // Check if best move is a legal move
                 }
             }
 
