@@ -74,6 +74,19 @@ public class MyAgent implements Agent {
      * @return a Move object. The best move to take. May not be legal.
      */
 	private Move get_best_move(State state, int cut_off) {
+        // Check if there is a winning move
+        Move move = check_if_terminal_move(state);
+        if(move != null){
+            return move; 
+        };
+
+        // Check if there are any defensive move
+        move = check_defense_moves(state);
+        if (move != null){
+            return move;
+        };
+
+
         Minimax minimax = new Minimax();
         Evaluation_Function evaluationFunction = currentState -> combined_evaluation(currentState);
         minimax.set_evaluation_function(evaluationFunction);
@@ -113,7 +126,7 @@ public class MyAgent implements Agent {
     private int combined_evaluation(State state) {
         ArrayList<Move> moves = env.get_legal_moves_in_all_positions(state);
         int evaluation = capture_potential_evaluation(state, moves) + protected_evaluation(state) - calculate_moves_to_goal(state) 
-        + check_if_terminal_move(state) + defense_line_evaluation(state, moves);
+        + defense_line_evaluation(state, moves);
         if (!state.white_turn){
             return -evaluation;
         }
@@ -121,6 +134,52 @@ public class MyAgent implements Agent {
         return evaluation;
     }
 
+    // Check if there are any defensive moves
+    private Move check_defense_moves(State state){
+        int defensive_height = state.white_turn ? 0 : env.height - 1; 
+        char player = state.white_turn ? Environment.WHITE : Environment.BLACK; 
+
+        // Go through width wise and check each defensive position
+        for(int i=0; i < env.width; i++){
+            if (state.board[defensive_height][i] == player){
+                    ArrayList<Move> legal_moves = env.get_legal_moves_from_position(state, i, defensive_height);
+                    for (Move move : legal_moves){
+                        if (move.is_diagonal()){
+                            return move;
+                        }
+                    }
+                }
+            }
+        return null;
+        }
+
+
+    // Check if there is a winning move
+    /**
+     * Evaluates function: Check if there are any moves that will get to the winning move
+     * @param state The state to be evaluated
+     * @return An evaluation value that should be >>> than the other evaluation functions
+     */
+    private Move check_if_terminal_move(State state){
+        int winning_height = state.white_turn ? env.height - 1 : 0; 
+
+        for (int h = 0; h < env.height; h++) {
+            for (int w = 0; w < env.width; w++){
+                // Check if any legal; moves lead to winning move
+                if (state.board[h][w] == (state.white_turn ? Environment.WHITE : Environment.BLACK)){
+                        ArrayList<Move> legal_moves = env.get_legal_moves_in_all_positions(state);
+                        for (Move move: legal_moves){
+                            if (move.y2 == winning_height){
+                                // return Integer.MAX_VALUE;
+                                return move;
+                            }
+                        }
+                    }
+                }
+            }
+
+        return null;
+    }
 
     // Implementation of alpha-beta pruning algorithm
     // Count number of possible elimination
@@ -228,31 +287,6 @@ public class MyAgent implements Agent {
         return score;
     }
 
-    /**
-     * Evaluates function: Check if there are any moves that will get to the winning move
-     * @param state The state to be evaluated
-     * @return An evaluation value that should be >>> than the other evaluation functions
-     */
-    private int check_if_terminal_move(State state){
-        int winning_height = state.white_turn ? env.height - 1 : 0; 
-
-        for (int h = 0; h < env.height; h++) {
-            for (int w = 0; w < env.width; w++){
-                // Check if any legal; moves lead to winning move
-                if (state.board[h][w] == (state.white_turn ? Environment.WHITE : Environment.BLACK)){
-                        ArrayList<Move> legal_moves = env.get_legal_moves_in_all_positions(state);
-                        for (Move move: legal_moves){
-                            if (move.y2 == winning_height){
-                                return Integer.MAX_VALUE;
-                            }
-                        }
-                    }
-                }
-            }
-
-        return 0;
-    }
-
 
     private int defense_line_evaluation(State state, ArrayList<Move> moves){
         char player = state.white_turn ? Environment.WHITE : Environment.BLACK; 
@@ -266,15 +300,15 @@ public class MyAgent implements Agent {
                         if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
                             return Integer.MAX_VALUE - 1;
                         }
-                        return -(env.width << 10);
+                        return -(env.width << 5);
                     };
                     break;
                 case Environment.BLACK: 
                     if (move.y1 == env.height - 1){
                         if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
-                            return Integer.MAX_VALUE - 5;
+                            return Integer.MAX_VALUE - 1;
                         }
-                        return -(env.width << 10);
+                        return -(env.width << 5);
                     };
                     break;
             }
@@ -284,12 +318,9 @@ public class MyAgent implements Agent {
     // is called when the game is over or the match is aborted
 	@Override
 	public void cleanup() {
-		// TODO: cleanup so that the agent is ready for the next match
         // Reset all variables that need to be reset to restart the game
         this.env = null;
 	}
 }
 
-// Endgame Scenarios: In later stages of the game, the evaluation function could shift to prioritize reaching the goal line over other considerations,
-// especially when few pieces are left on the board.
 
