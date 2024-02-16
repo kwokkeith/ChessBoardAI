@@ -7,7 +7,6 @@ public class MyAgent implements Agent {
     private String role; // the name of this agent's role (white or black)
 	private int playclock; // this is how much time (in seconds) we have before nextAction needs to return a move
 	private boolean myTurn; // whether it is this agent's turn or not
-	private int width, height; // dimensions of the board
     private Environment env; // To know about board environment
     
     // For timer...
@@ -21,10 +20,7 @@ public class MyAgent implements Agent {
 		this.role = role;
 		this.playclock = playclock;
 		myTurn = !role.equals("white");
-		this.width = width;
-		this.height = height;
 
-		// TODO: add your own initialization code here
         this.env = new Environment(width, height);
     }
 
@@ -46,11 +42,6 @@ public class MyAgent implements Agent {
         myTurn = !myTurn;
 
 		if (myTurn) {            
-            // If i understand correctly; the root node of minimax a-b algo uses 
-            // this.env.current_state here as a root node.
-
-			// TODO: 2. run alpha-beta search to determine the best move
-
             // Start timer if player turn
             timer = new Timer();
             stop_flag = false;
@@ -61,6 +52,8 @@ public class MyAgent implements Agent {
                     timer.cancel();
                 }
             }, (playclock - 1) * 1000);
+
+            // For cut off depth
             int cut_off = 2;
             Move best_move = get_best_move(this.env.current_state, cut_off);
             if (!stop_flag){
