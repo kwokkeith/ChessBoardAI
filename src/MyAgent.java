@@ -96,6 +96,9 @@ public class MyAgent implements Agent {
             State working_state = copy_state(env.current_state);
             
             minimax.run(env, working_state, cut_off, myTurn);
+
+             // Print the number of nodes expanded here
+            System.out.println("Nodes expanded: " + minimax.get_nodes_expanded());
         } catch(Exception e) {
             System.out.println("Minimax algorithm failed to run!: " + e.getMessage());
         }

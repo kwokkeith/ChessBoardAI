@@ -6,6 +6,7 @@ public class Minimax {
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
     public Evaluation_Function evaluation_function = null;
     public static Move best_move = null;
+    private int nodes_expanded = 0;
 
 
     /**
@@ -20,16 +21,14 @@ public class Minimax {
     private int minimax_alpha_beta(Environment current_env, State state, int cutoff_depth, 
         int depth, int alpha, int beta, boolean maximising_player) throws Exception {
 
-        // System.out.println("Minimax alpha beta search begins...");
+        nodes_expanded++;
 
         if (depth == cutoff_depth ) {
             // Must store the state
-            return evaluation_function.evaluate(state); // Keith to compute
+            return evaluation_function.evaluate(state); 
         }
 
-
         if (maximising_player) {
-            // System.out.println("\nMaximising player turn:");
 
             int maxEvaluation = NEGATIVE_INFINITY;
 
@@ -63,7 +62,6 @@ public class Minimax {
             return maxEvaluation;
 
         } else {
-            // System.out.println("\nMinimising player turn:");
 
             int minEvaluation = POSITIVE_INFINITY;
             ArrayList<Move> moves = current_env.get_legal_moves_in_all_positions(state);
@@ -97,13 +95,17 @@ public class Minimax {
         }
     }
 
+    // Getter to get the number of nodes expanded 
+    public int get_nodes_expanded() {
+        return nodes_expanded;
+    }
+
     public void set_evaluation_function(Evaluation_Function evaluation_function) {
         this.evaluation_function = evaluation_function;
     }
 
-
     public Move run(Environment current_environment, State state, int cutoff_depth, boolean maximising_player) {
-        
+        nodes_expanded = 0;
         try {
             for (int i = 1; i <= cutoff_depth; i++) {
                 minimax_alpha_beta(current_environment, state, i, 0, NEGATIVE_INFINITY, POSITIVE_INFINITY, maximising_player);
@@ -113,7 +115,6 @@ public class Minimax {
         }
         return best_move;
     }
-
 }
 
 
