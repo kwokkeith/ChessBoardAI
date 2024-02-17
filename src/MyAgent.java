@@ -1,24 +1,18 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.TimerTask;
-import java.util.Timer;
 
 public class MyAgent implements Agent {
     private String role; // the name of this agent's role (white or black)
-	private int playclock; // this is how much time (in seconds) we have before nextAction needs to return a move
+	public static int playclock; // this is how much time (in seconds) we have before nextAction needs to return a move
 	private boolean myTurn; // whether it is this agent's turn or not
     private Environment env; // To know about board environment
-    
-    // For timer...
-    private Timer timer;
-    private volatile boolean stop_flag = false;
 
 	/*
 		init(String role, int playclock) is called once before you have to select the first action. Use it to initialize the agent. role is either "white" or "black" and playclock is the number of seconds after which nextAction must return.
 	*/
-    public void init(String role, int width, int height, int playclock) {
+    public void init(String role, int width, int height, int current_playclock) {
 		this.role = role;
-		this.playclock = playclock;
+		playclock = current_playclock;
 		myTurn = !role.equals("white");
 
         this.env = new Environment(width, height);
@@ -40,40 +34,26 @@ public class MyAgent implements Agent {
         }
         // update turn (above myTurn is still for the previous state)
         myTurn = !myTurn;
+        Move best_move = null;
 
-		if (myTurn) {            
+        if (myTurn) {            
             // Start timer if player turn
-            timer = new Timer();
-            stop_flag = false;
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    stop_flag = true;
-                    timer.cancel();
-                }
-            }, (playclock - 2) * 1000);
-
+            long startTime = System.currentTimeMillis();
+        
             // For cut off depth
-            int cut_off = 2;
-            Move best_move = get_best_move(this.env.current_state, cut_off);
-            if (!stop_flag){
-                if (cut_off <= 5){
-                    cut_off += 1;
-                    best_move = get_best_move(this.env.current_state, cut_off);
-                }
-            }
-
+            best_move = get_best_move(this.env.current_state, 2, startTime);
+            
             System.out.println("My agent sends this command: " + "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")");
             return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
-		}
-        return "noop";    
+        }
+    return "noop";    
 	}
 
     /**
      * Helper function to compute the best move given current environment.
      * @return a Move object. The best move to take. May not be legal.
      */
-	private Move get_best_move(State state, int cut_off) {
+	private Move get_best_move(State state, int cut_off, long startTime) {
         // Check if there is a winning move
         Move move = check_if_terminal_move(state);
         if(move != null){
@@ -90,21 +70,15 @@ public class MyAgent implements Agent {
         Minimax minimax = new Minimax();
         Evaluation_Function evaluationFunction = currentState -> combined_evaluation(currentState);
         minimax.set_evaluation_function(evaluationFunction);
-        try {
-            // System.out.println("Environment, its height, width: " + env.current_state + env.height + ", " + env.width);
-            
+        Move current_best_move = null;
+        try {            
             State working_state = copy_state(env.current_state);
-            
-            minimax.run(env, working_state, cut_off, myTurn);
-
-             // Print the number of nodes expanded here
-            System.out.println("Nodes expanded: " + minimax.get_nodes_expanded());
+            current_best_move = minimax.run(env, working_state, cut_off, myTurn, startTime);
         } catch(Exception e) {
             System.out.println("Minimax algorithm failed to run!: " + e.getMessage());
         }
-        // System.out.println("Minimax returns next best move: " + Minimax.best_move);
     
-        return Minimax.best_move;
+        return current_best_move;
     }
 
     // To deep copy the state
@@ -301,7 +275,7 @@ public class MyAgent implements Agent {
                 case Environment.WHITE:
                     if (move.y1 == 0){
                         if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
-                            return Integer.MAX_VALUE - 1;
+                            return Integer.MAX_VALUE - 5;
                         }
                         return -(env.width << 5);
                     };
@@ -309,7 +283,7 @@ public class MyAgent implements Agent {
                 case Environment.BLACK: 
                     if (move.y1 == env.height - 1){
                         if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
-                            return Integer.MAX_VALUE - 1;
+                            return Integer.MAX_VALUE - 5;
                         }
                         return -(env.width << 5);
                     };

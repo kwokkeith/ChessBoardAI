@@ -19,8 +19,12 @@ public class Minimax {
      * @return root state's highest possible score. (Input state's highest possible score)
      */
     private int minimax_alpha_beta(Environment current_env, State state, int cutoff_depth, 
-        int depth, int alpha, int beta, boolean maximising_player) throws Exception {
+        int depth, int alpha, int beta, boolean maximising_player, long startTime) throws Exception {
 
+        if (System.currentTimeMillis() - startTime + 100 > MyAgent.playclock * 1000){
+            // If timer is out, throw exception
+            throw new Exception("Time is up");
+        }
         nodes_expanded++;
 
         if (depth == cutoff_depth ) {
@@ -40,7 +44,7 @@ public class Minimax {
 
             for (Move child_move : moves) { // To implement somehow a way to get child states
                 current_env.move(state, child_move);
-                int evaluation = minimax_alpha_beta(current_env, state, cutoff_depth, depth + 1, alpha, beta, false);
+                int evaluation = minimax_alpha_beta(current_env, state, cutoff_depth, depth + 1, alpha, beta, false, startTime);
                 maxEvaluation = Math.max(maxEvaluation, evaluation);
 
 
@@ -74,7 +78,7 @@ public class Minimax {
             for (Move child_move : current_env.get_legal_moves_in_all_positions(state)) { // To implement somehow a way to get child states
                 current_env.move(state, child_move);
                 
-                int evaluation = minimax_alpha_beta(current_env, state, cutoff_depth, depth + 1, alpha, beta, true);
+                int evaluation = minimax_alpha_beta(current_env, state, cutoff_depth, depth + 1, alpha, beta, true, startTime);
                 minEvaluation = Math.min(minEvaluation, evaluation);
                 beta = Math.min(beta, evaluation);
 
@@ -104,16 +108,19 @@ public class Minimax {
         this.evaluation_function = evaluation_function;
     }
 
-    public Move run(Environment current_environment, State state, int cutoff_depth, boolean maximising_player) {
+    public Move run(Environment current_environment, State state, int cutoff_depth, boolean maximising_player, long startTime) throws Exception {
         nodes_expanded = 0;
+        Move current_best_move = null;
         try {
-            for (int i = 1; i <= cutoff_depth; i++) {
-                minimax_alpha_beta(current_environment, state, i, 0, NEGATIVE_INFINITY, POSITIVE_INFINITY, maximising_player);
+            int i = cutoff_depth;
+            while (true){
+                minimax_alpha_beta(current_environment, state, i, 0, NEGATIVE_INFINITY, POSITIVE_INFINITY, maximising_player, startTime);
+                current_best_move = best_move;
+                i++;
             }
         } catch(Exception e) {
-            return best_move;
+            return current_best_move;
         }
-        return best_move;
     }
 }
 
