@@ -48,7 +48,9 @@ public class Minimax {
             }
 
             if (depth == 0){
-                best_move = moves.get(0);
+                if (current_best_move == null){
+                    current_best_move = moves.get(0);
+                }
             }
 
             for (Move child_move : moves) { // To implement somehow a way to get child states
@@ -82,7 +84,9 @@ public class Minimax {
             
             // If root node then pick a random action first
             if (depth == 0){
-                best_move = moves.get(0);
+                if (current_best_move == null){
+                    current_best_move = moves.get(0);
+                }
             }
 
             for (Move child_move : current_env.get_legal_moves_in_all_positions(state)) { // To implement somehow a way to get child states

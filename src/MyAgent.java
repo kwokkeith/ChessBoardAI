@@ -42,7 +42,7 @@ public class MyAgent implements Agent {
             // For cut off depth
             int cut_off = 2;
             Move best_move = get_best_move(this.env.current_state, cut_off);
-
+            
             System.out.println("My agent sends this command: " + "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")");
             return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
 		}
