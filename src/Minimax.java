@@ -2,11 +2,11 @@ import java.util.ArrayList;
 
 public class Minimax {
 
-    private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
-    private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
+    public static final int POSITIVE_INFINITY = Integer.MAX_VALUE - 100;
+    public static final int NEGATIVE_INFINITY = Integer.MIN_VALUE + 100;
     public Evaluation_Function evaluation_function = null;
     public static Move best_move = null;
-    private int nodes_expanded = 0;
+    public static Move current_best_move = null;
 
 
     /**
@@ -16,28 +16,37 @@ public class Minimax {
      * @param alpha highest score of a State so far  for maximiser. Only can be set during maximiser's turn
      * @param beta highest score of a State so far for minimiser. Only can be set during minimiser's turn
      * @param maximising_player boolean to determine whose turn it is
+     * @param startTime Time when the algorithm started in ms
      * @return root state's highest possible score. (Input state's highest possible score)
      */
-    private int minimax_alpha_beta(Environment current_env, State state, int cutoff_depth, 
+    public int minimax_alpha_beta (Environment current_env, State state, int cutoff_depth, 
         int depth, int alpha, int beta, boolean maximising_player, long startTime) throws Exception {
 
-        if (System.currentTimeMillis() - startTime + 100 > MyAgent.playclock * 1000){
-            // If timer is out, throw exception
-            throw new Exception("Time is up");
+
+        // System.out.println("Minimax alpha beta search begins...");
+        if (System.currentTimeMillis() - startTime + 1000 > MyAgent.playclock){
+            throw new Exception("Times up");
         }
-        nodes_expanded++;
+
+        System.out.println("Current Depth: " + (depth + 1));
 
         if (depth == cutoff_depth ) {
             // Must store the state
             return evaluation_function.evaluate(state); 
         }
 
+        
         if (maximising_player) {
 
             int maxEvaluation = NEGATIVE_INFINITY;
 
             // If root node then pick a random action first
-            ArrayList<Move> moves = current_env.get_legal_moves_in_all_positions(state);
+            ArrayList<Move> moves = current_env.get_legal_moves_in_all_positions(state);            
+
+            for (Move move: moves){
+                System.out.println(move);
+            }
+
             if (depth == 0){
                 best_move = moves.get(0);
             }
@@ -66,6 +75,7 @@ public class Minimax {
             return maxEvaluation;
 
         } else {
+            // System.out.println("\nMinimising player turn:");
 
             int minEvaluation = POSITIVE_INFINITY;
             ArrayList<Move> moves = current_env.get_legal_moves_in_all_positions(state);
@@ -99,28 +109,8 @@ public class Minimax {
         }
     }
 
-    // Getter to get the number of nodes expanded 
-    public int get_nodes_expanded() {
-        return nodes_expanded;
-    }
-
     public void set_evaluation_function(Evaluation_Function evaluation_function) {
         this.evaluation_function = evaluation_function;
-    }
-
-    public Move run(Environment current_environment, State state, int cutoff_depth, boolean maximising_player, long startTime) throws Exception {
-        nodes_expanded = 0;
-        Move current_best_move = null;
-        try {
-            int i = cutoff_depth;
-            while (true){
-                minimax_alpha_beta(current_environment, state, i, 0, NEGATIVE_INFINITY, POSITIVE_INFINITY, maximising_player, startTime);
-                current_best_move = best_move;
-                i++;
-            }
-        } catch(Exception e) {
-            return current_best_move;
-        }
     }
 }
 

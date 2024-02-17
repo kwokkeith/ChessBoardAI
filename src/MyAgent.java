@@ -3,7 +3,7 @@ import java.util.Arrays;
 
 public class MyAgent implements Agent {
     private String role; // the name of this agent's role (white or black)
-	public static int playclock; // this is how much time (in seconds) we have before nextAction needs to return a move
+	public static long playclock; // this is how much time (in ms) we have before nextAction needs to return a move
 	private boolean myTurn; // whether it is this agent's turn or not
     private Environment env; // To know about board environment
 
@@ -12,7 +12,7 @@ public class MyAgent implements Agent {
 	*/
     public void init(String role, int width, int height, int current_playclock) {
 		this.role = role;
-		playclock = current_playclock;
+		playclock = current_playclock * 1000; 
 		myTurn = !role.equals("white");
 
         this.env = new Environment(width, height);
@@ -24,7 +24,10 @@ public class MyAgent implements Agent {
      * @param lastMove Coordinates of the previous move in the form (x1, y1, x2, y2). null on game start.
      */
     public String nextAction(int[] lastMoveCoordinates) {
-        
+        System.out.println("Initial State of Board: ");
+        System.out.println(env.current_state);
+
+
         if (lastMoveCoordinates != null) {
             Move lastMove = new Move(lastMoveCoordinates[0]-1,lastMoveCoordinates[1]-1, lastMoveCoordinates[2]-1, lastMoveCoordinates[3]-1);
 
@@ -34,26 +37,26 @@ public class MyAgent implements Agent {
         }
         // update turn (above myTurn is still for the previous state)
         myTurn = !myTurn;
-        Move best_move = null;
 
-        if (myTurn) {            
-            // Start timer if player turn
-            long startTime = System.currentTimeMillis();
-        
+		if (myTurn) {            
             // For cut off depth
-            best_move = get_best_move(this.env.current_state, 2, startTime);
-            
+            int cut_off = 2;
+            Move best_move = get_best_move(this.env.current_state, cut_off);
+
             System.out.println("My agent sends this command: " + "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")");
             return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
-        }
-    return "noop";    
+		}
+        return "noop";    
 	}
 
     /**
      * Helper function to compute the best move given current environment.
      * @return a Move object. The best move to take. May not be legal.
      */
-	private Move get_best_move(State state, int cut_off, long startTime) {
+	private Move get_best_move(State state, int start_cutoff_depth) {
+        // Start timer
+        long startTime = System.currentTimeMillis();
+
         // Check if there is a winning move
         Move move = check_if_terminal_move(state);
         if(move != null){
@@ -66,23 +69,28 @@ public class MyAgent implements Agent {
             return move;
         };
 
-
         Minimax minimax = new Minimax();
         Evaluation_Function evaluationFunction = currentState -> combined_evaluation(currentState);
         minimax.set_evaluation_function(evaluationFunction);
-        Move current_best_move = null;
-        try {            
-            State working_state = copy_state(env.current_state);
-            current_best_move = minimax.run(env, working_state, cut_off, myTurn, startTime);
-        } catch(Exception e) {
-            System.out.println("Minimax algorithm failed to run!: " + e.getMessage());
+        Minimax.current_best_move = null;
+
+        try {
+            for (int i = start_cutoff_depth; i < 50; i++){
+                State working_state = copy_state(state);
+                minimax.minimax_alpha_beta(env, working_state, i - 1, 0, Minimax.NEGATIVE_INFINITY, Minimax.POSITIVE_INFINITY, myTurn, startTime);
+                Minimax.current_best_move = Minimax.best_move;
+            }
+        }
+        catch (Exception e){
+            System.out.println("Time is up, the best move now is: " + Minimax.current_best_move + " But workin calculated move is: " + Minimax.best_move);
+            return Minimax.current_best_move;
         }
     
-        return current_best_move;
+        return Minimax.current_best_move;
     }
 
     // To deep copy the state
-    private State copy_state(State state) {
+    public State copy_state(State state) {
         State new_state     = new State(this.env.width, this.env.height);
         char[][] board_copy = new char[this.env.height][this.env.width];
 
@@ -275,7 +283,7 @@ public class MyAgent implements Agent {
                 case Environment.WHITE:
                     if (move.y1 == 0){
                         if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
-                            return Integer.MAX_VALUE - 5;
+                            return Integer.MAX_VALUE - 100;
                         }
                         return -(env.width << 5);
                     };
@@ -283,7 +291,7 @@ public class MyAgent implements Agent {
                 case Environment.BLACK: 
                     if (move.y1 == env.height - 1){
                         if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
-                            return Integer.MAX_VALUE - 5;
+                            return Integer.MAX_VALUE - 100;
                         }
                         return -(env.width << 5);
                     };

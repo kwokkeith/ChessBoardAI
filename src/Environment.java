@@ -24,6 +24,7 @@ public class Environment {
      * @return false if it is not out-of-bounds; true if it is
      */
     private boolean is_move_out_of_bounds(Move moveToTest) {
+        
         if ((0 <= moveToTest.x1 && moveToTest.x1 < this.width) &
             (0 <= moveToTest.y1 && moveToTest.y1 < this.height) &
             (0 <= moveToTest.x2 && moveToTest.x2 < this.width) &
@@ -131,6 +132,7 @@ public class Environment {
         return moves;        
     }
     
+
     public void move(State state, Move move) {
         state.board[move.y2][move.x2] = state.board[move.y1][move.x1];
         
@@ -154,6 +156,7 @@ public class Environment {
             // Reset the next move to be the original decided move
             state.board[previousMove.y2][previousMove.x2] = tmp; 
         }
+
         // Pass turn
         state.white_turn = !state.white_turn;
     }
