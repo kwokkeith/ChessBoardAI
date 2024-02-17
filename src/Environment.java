@@ -120,15 +120,31 @@ public class Environment {
         // Find which pieces are friendly pieces - rationale is to move own's piece only
         char friendly = state.white_turn ? WHITE : BLACK;
 
-        for (int y = 0; y < this.height; y++){
-            for (int x = 0; x < this.width; x++) {
-                if (state.board[y][x] == friendly) {
-                    for (Move legalMove : get_legal_moves_from_position(state, x, y)) {
-                        moves.add(legalMove);
+        // Prioritise pieces that are closer to the enemy base first (Ordering)
+        if (friendly == WHITE){
+            for (int y = this.height - 1; y >= 0; y--){
+                for (int x = 0; x < this.width; x++) {
+                    if (state.board[y][x] == friendly) {
+                        for (Move legalMove : get_legal_moves_from_position(state, x, y)) {
+                            moves.add(legalMove);
+                        }
+                    }
+                }
+            } 
+        }
+        else{
+            for (int y = 0; y < this.height; y++){
+                for (int x = 0; x < this.width; x++) {
+                    if (state.board[y][x] == friendly) {
+                        for (Move legalMove : get_legal_moves_from_position(state, x, y)) {
+                            moves.add(legalMove);
+                        }
                     }
                 }
             }
         }
+
+
         return moves;        
     }
     
