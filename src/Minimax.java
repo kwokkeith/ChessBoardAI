@@ -18,7 +18,7 @@ public class Minimax {
      * @return root state's highest possible score. (Input state's highest possible score)
      */
     private int minimax_alpha_beta(Environment current_env, State state, int cutoff_depth, 
-        int depth, int alpha, int beta, boolean maximising_player) {
+        int depth, int alpha, int beta, boolean maximising_player) throws Exception {
 
         // System.out.println("Minimax alpha beta search begins...");
 
@@ -102,15 +102,16 @@ public class Minimax {
     }
 
 
-    public int run(Environment current_environment, State state, int cutoff_depth, boolean maximising_player) {
-        /*
-        if (evaluation_function == null) {
-            System.out.println("Evaluation function is not set!");
-            throw new Exception("Evaluation method is not set in Minimax algorithm!");
+    public Move run(Environment current_environment, State state, int cutoff_depth, boolean maximising_player) {
+        
+        try {
+            for (int i = 1; i <= cutoff_depth; i++) {
+                minimax_alpha_beta(current_environment, state, i, 0, NEGATIVE_INFINITY, POSITIVE_INFINITY, maximising_player);
+            }
+        } catch(Exception e) {
+            return best_move;
         }
-         */
-        System.out.println("Evaluation function is set!");
-        return minimax_alpha_beta(current_environment, state, cutoff_depth, 0, NEGATIVE_INFINITY, POSITIVE_INFINITY, maximising_player);
+        return best_move;
     }
 
 }
