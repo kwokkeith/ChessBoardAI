@@ -24,8 +24,8 @@ public class MyAgent implements Agent {
      * @param lastMove Coordinates of the previous move in the form (x1, y1, x2, y2). null on game start.
      */
     public String nextAction(int[] lastMoveCoordinates) {
-        System.out.println("Initial State of Board: ");
-        System.out.println(env.current_state);
+        // System.out.println("Initial State of Board: ");
+        // System.out.println(env.current_state);
 
 
         if (lastMoveCoordinates != null) {
@@ -83,9 +83,10 @@ public class MyAgent implements Agent {
         }
         catch (Exception e){
             System.out.println("Time is up, the best move now is: " + Minimax.current_best_move + " But workin calculated move is: " + Minimax.best_move);
+            System.out.println("Nodes expanded: " + minimax.get_nodes_expanded());
             return Minimax.current_best_move;
         }
-    
+        System.out.println("Nodes expanded: " + minimax.get_nodes_expanded());
         return Minimax.current_best_move;
     }
 
