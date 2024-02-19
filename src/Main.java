@@ -6,8 +6,7 @@ public class Main {
 	 */
 	public static void main(String[] args){
 		try{
-			// TODO: put in your agent here
-			// // TEST 1: Move a piece
+			// TEST 1: Move a piece
 			// env.move(env.current_state, new Move(0, 0, 1, 2));
 			// System.out.println("Test 1: env.current_state:" + env.current_state);
 

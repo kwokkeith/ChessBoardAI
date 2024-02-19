@@ -18,6 +18,7 @@ public class Environment {
         this.current_state = new State(width, height);
     }
 
+
     /**
      * Checks if a Move's final position is in the board; whether move is valid
      * @param moveToTest A Move object. We will extract out x2 and y2 from it.
@@ -34,6 +35,7 @@ public class Environment {
         return true;
     }
 
+
     /**
      * Checks for whether the final position is empty or not (blocked or not)
      * @param moveToTest We will extract out the x2 and y2 (final position) from it
@@ -46,6 +48,7 @@ public class Environment {
         }
         return true;
     }
+
 
     /**
      * Check for whether there is a capturable-diagonal piece from current position
@@ -60,6 +63,7 @@ public class Environment {
         }
         return false;
     }
+
 
     /**
      * Helper function for get_legal_moves_in_all_positions
@@ -105,9 +109,9 @@ public class Environment {
                 }
             }
         }
-
         return legalMoves;
     }
+
 
     /**
      * Iterate through entire board and compute all legal moves from each position in board.
@@ -121,34 +125,25 @@ public class Environment {
         char friendly = state.white_turn ? WHITE : BLACK;
 
         // Prioritise pieces that are closer to the enemy base first (Ordering)
-        if (friendly == WHITE){
-            for (int y = this.height - 1; y >= 0; y--){
-                for (int x = 0; x < this.width; x++) {
-                    if (state.board[y][x] == friendly) {
-                        for (Move legalMove : get_legal_moves_from_position(state, x, y)) {
-                            moves.add(legalMove);
-                        }
-                    }
-                }
-            } 
-        }
-        else{
-            for (int y = 0; y < this.height; y++){
-                for (int x = 0; x < this.width; x++) {
-                    if (state.board[y][x] == friendly) {
-                        for (Move legalMove : get_legal_moves_from_position(state, x, y)) {
-                            moves.add(legalMove);
-                        }
+        for (int y = 0; y < this.height; y++){
+            for (int x = 0; x < this.width; x++) {
+                if (state.board[y][x] == friendly) {
+                    for (Move legalMove : get_legal_moves_from_position(state, x, y)) {
+                        moves.add(legalMove);
                     }
                 }
             }
         }
 
-
         return moves;        
     }
     
 
+    /**
+     * Updates the state with a move action
+     * @param state State in consideration
+     * @param move The move to perform
+     */
     public void move(State state, Move move) {
         state.board[move.y2][move.x2] = state.board[move.y1][move.x1];
         
@@ -159,6 +154,12 @@ public class Environment {
         state.white_turn = !state.white_turn;
     }
 
+
+    /**
+     * Updates the state with an undo action.
+     * @param state State in consideration
+     * @param previousMove Move to undo
+     */
     public void undo_move(State state, Move previousMove) {
         if (previousMove.is_diagonal()) {
             // Previous move captured the diagonal horse.

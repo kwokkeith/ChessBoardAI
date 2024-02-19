@@ -2,7 +2,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MyAgent implements Agent {
-    private String role; // the name of this agent's role (white or black)
 	public static long playclock; // this is how much time (in ms) we have before nextAction needs to return a move
 	private boolean myTurn; // whether it is this agent's turn or not
     private Environment env; // To know about board environment
@@ -11,7 +10,6 @@ public class MyAgent implements Agent {
 		init(String role, int playclock) is called once before you have to select the first action. Use it to initialize the agent. role is either "white" or "black" and playclock is the number of seconds after which nextAction must return.
 	*/
     public void init(String role, int width, int height, int current_playclock) {
-		this.role = role;
 		playclock = current_playclock * 1000; 
 		myTurn = !role.equals("white");
 
@@ -24,15 +22,10 @@ public class MyAgent implements Agent {
      * @param lastMove Coordinates of the previous move in the form (x1, y1, x2, y2). null on game start.
      */
     public String nextAction(int[] lastMoveCoordinates) {
-        // System.out.println("Initial State of Board: ");
-        // System.out.println(env.current_state);
-
-
         if (lastMoveCoordinates != null) {
             Move lastMove = new Move(lastMoveCoordinates[0]-1,lastMoveCoordinates[1]-1, lastMoveCoordinates[2]-1, lastMoveCoordinates[3]-1);
 
             // update internal world model according to the action that was just executed
-
             this.env.move(this.env.current_state, lastMove);
         }
         // update turn (above myTurn is still for the previous state)
@@ -43,11 +36,11 @@ public class MyAgent implements Agent {
             int cut_off = 2;
             Move best_move = get_best_move(this.env.current_state, cut_off);
             
-            System.out.println("My agent sends this command: " + "(move " + (best_move.x1) + " " + (best_move.y1) + " " + (best_move.x2) + " " + (best_move.y2) + ")");
             return "(move " + (best_move.x1 + 1) + " " + (best_move.y1 + 1) + " " + (best_move.x2 + 1) + " " + (best_move.y2 + 1) + ")";
 		}
         return "noop";    
 	}
+
 
     /**
      * Helper function to compute the best move given current environment.
@@ -82,15 +75,18 @@ public class MyAgent implements Agent {
             }
         }
         catch (Exception e){
-            System.out.println("Time is up, the best move now is: " + Minimax.current_best_move + " But workin calculated move is: " + Minimax.best_move);
-            System.out.println("Nodes expanded: " + minimax.get_nodes_expanded());
             return Minimax.current_best_move;
         }
-        System.out.println("Nodes expanded: " + minimax.get_nodes_expanded());
+    
         return Minimax.current_best_move;
     }
 
-    // To deep copy the state
+
+    /**
+     * To deep copy a state
+     * @param state State to be deep copied
+     * @return Copy of the state
+     */
     public State copy_state(State state) {
         State new_state     = new State(this.env.width, this.env.height);
         char[][] board_copy = new char[this.env.height][this.env.width];
@@ -104,6 +100,7 @@ public class MyAgent implements Agent {
         return new_state;
     }
 
+
     /**
      * Calculates the evaluation value based on the different evaluation functions
      * @param state State of the board
@@ -112,7 +109,7 @@ public class MyAgent implements Agent {
     private int combined_evaluation(State state) {
         ArrayList<Move> moves = env.get_legal_moves_in_all_positions(state);
         int evaluation = capture_potential_evaluation(state, moves) + protected_evaluation(state) - calculate_moves_to_goal(state) 
-        + defense_line_evaluation(state, moves);
+        + defense_line_evaluation(state, moves); 
         if (!state.white_turn){
             return -evaluation;
         }
@@ -120,7 +117,13 @@ public class MyAgent implements Agent {
         return evaluation;
     }
 
+
     // Check if there are any defensive moves
+    /**
+     * Check if there are any defensive moves in the current state
+     * @param state State to be considered
+     * @return A defensive move if one exist, else null
+     */
     private Move check_defense_moves(State state){
         int defensive_height = state.white_turn ? 0 : env.height - 1; 
         char player = state.white_turn ? Environment.WHITE : Environment.BLACK; 
@@ -167,38 +170,36 @@ public class MyAgent implements Agent {
         return null;
     }
 
-    // Implementation of alpha-beta pruning algorithm
-    // Count number of possible elimination
-    private int capture_potential_evaluation(State state, ArrayList<Move> moves) {
-        /* `state`: The state to be evaluated
-         * At the current state, how many possible captures are possible after the other player has made a turn to move
-         * Can be L-shaped or diagonal (more priority <diagonal> since it is usually better to capture)
-         * Diagonal moves are only possible if the opponent piece is diagonally infront of a friendly piece 
-         * 
-         * The output `score` indicates the number of potential moves that an enemy can 
-         * make that would result in its possible capture in the next turn*/
 
+
+    /**
+     * At the current state, how many possible captures are possible after the other player has made a turn to move
+     * Can be L-shaped or diagonal (more priority <diagonal> since it is usually better to capture)
+     * Diagonal moves are only possible if the opponent piece is diagonally infront of a friendly piece
+     * Count the number of possible elimination after an opponent makes a move.
+     * @param state State to be evaluated
+     * @param moves Legal moves for the current state
+     * @return Number of potential moves that an enemy can make that would result in its possible capture in the next turn.
+     */
+    private int capture_potential_evaluation(State state, ArrayList<Move> moves) {
         // Flip the player because we are testing the potential next state (if white moves then BLACK turn)
         char player = state.white_turn ? Environment.BLACK : Environment.WHITE;
         int one_step = state.white_turn ? -1 : 1; 
         int score = 0;
-        int weight = 1;
 
         /* Count number of possible elimination
         Get possible positions of the enemy (Get legal moves if the current state is the opponent's turn) */
-
-
         for (Move move : moves){            
             // Check if the new position is beside an opponent knight if so add 1.
             if (move.x2 < env.width - 1 && move.y2 + one_step < env.height && move.y2 + one_step >= 0){
                 if(state.board[move.y2 + one_step][move.x2 + 1] == player){
-                    score += weight;
+                    score += 1;
                     continue;
                 }
             }
             if (move.x2 > 0 && move.y2 + one_step < env.height && move.y2 + one_step >= 0){
                 if (state.board[move.y2 + one_step][move.x2 - 1] == player){
-                    score += weight;
+                    score += 1;
                     continue;
                 }
             }
@@ -207,13 +208,15 @@ public class MyAgent implements Agent {
         return score;
     }
 
+
+    /** 
+     * At the current state, calculate the amount of friendly pieces that can protect other friendly pieces
+     * The output `score` indicates the number of friendly pieces covered by other friendly pieces. 
+     * @param state State to be evaluated
+     * @return Number of possible states that allows for a friendly piece to cover another
+     */
     private int protected_evaluation(State state) {
-        /* `state`: The state to be evaluated
-         * At the current state, calculate the amount of friendly pieces that can protect other friendly pieces
-         * The output `score` indicates the number of friendly pieces covered by other friendly pieces.
-         */
         int score = 0;
-        int weight = 1;
 
         // After the move, the state should be flipped (if white moves then the next state should be black's turn)
         char player = state.white_turn ? Environment.BLACK : Environment.WHITE;
@@ -227,13 +230,13 @@ public class MyAgent implements Agent {
                     // Check diagonal right (Check if it will go out of bounds)
                     if ((w + 1 < env.width) && (h + one_step < env.height) && (h + one_step >= 0) &&
                         (state.board[h + one_step][w + 1] == player)){
-                        score += weight;
+                        score += 1;
                         continue;
                     }
                     // Check diagonal left
                     if ((w > 0) && (h + one_step < env.height) && (h + one_step >= 0) &&
                     (state.board[h + one_step][w - 1] == player)){
-                        score += weight;
+                        score += 1;
                         continue;
                     }
                 }
@@ -243,13 +246,14 @@ public class MyAgent implements Agent {
         return score;
     }
 
-    private int calculate_moves_to_goal(State state) {
-        /* `state`: The state to be evaluated
-         * At the current state, how many possible moves can I make to get to the goal node (enemy baseline)
-         * Assume that the path is clear
-         * 
-         * The output `score` indicates the total number of possible moves to get to destination */
 
+    /**
+     * At the current state, how many possible moves can I make to get to the goal node (enemy baseline),
+     * assuming that the path is clear.
+     * @param state State to be evaluated
+     * @return Total number of possible moves to get to destination (enemy baseline)
+     */
+    private int calculate_moves_to_goal(State state) {
         int score = 0;
 
         // Get player indicator (WHITE or BLACK)
@@ -265,7 +269,6 @@ public class MyAgent implements Agent {
                         case Environment.WHITE: score += ((env.height - h) + 1) / 2; break;
                         case Environment.BLACK: score += (h + 2) / 2; break;
                     }
-
                 }
             }
         }
@@ -274,6 +277,13 @@ public class MyAgent implements Agent {
     }
 
 
+    /**
+     * This evaluation prioritises the formation of a defensive line in the friendly base as well as
+     * any capture of enemy close one tile away from the friendly base.
+     * @param state State to be evaluated 
+     * @param moves Legal moves for the current state
+     * @return Evaluation score to prioritise defense moves
+     */
     private int defense_line_evaluation(State state, ArrayList<Move> moves){
         char player = state.white_turn ? Environment.WHITE : Environment.BLACK; 
         char opponent = state.white_turn ? Environment.BLACK : Environment.WHITE;
@@ -284,7 +294,7 @@ public class MyAgent implements Agent {
                 case Environment.WHITE:
                     if (move.y1 == 0){
                         if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
-                            return Integer.MAX_VALUE - 100;
+                            return Integer.MAX_VALUE - 1000;
                         }
                         return -(env.width << 5);
                     };
@@ -292,7 +302,7 @@ public class MyAgent implements Agent {
                 case Environment.BLACK: 
                     if (move.y1 == env.height - 1){
                         if (move.is_diagonal() && env.can_diagonal_move_capture(move, state, opponent)){
-                            return Integer.MAX_VALUE - 100;
+                            return Integer.MAX_VALUE - 1000;
                         }
                         return -(env.width << 5);
                     };
@@ -301,6 +311,8 @@ public class MyAgent implements Agent {
         }
         return 0;
     }
+
+
     // is called when the game is over or the match is aborted
 	@Override
 	public void cleanup() {
